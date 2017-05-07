@@ -174,6 +174,11 @@ public class TimeCode {
         return 1_000_000 * hh + 10_000 * mm + 100 * ss + ff;
     }
     
+    static String TCInFrameToStr(int TC){
+	TimeCode.TCInFrameToIntStr(TC);
+	return new TimeCode(TimeCode.TCInFrameToIntStr(TC)).getTCStr();
+    }   
+     
     static int TCStrToFrame(String s){
         char [] array = s.toCharArray();
         char arrayTemp [] = new char[8];
@@ -210,7 +215,7 @@ public class TimeCode {
          ff = i - 100 * ss; // кадры  
         return 90_000 * hh + 1500 * mm + 25 * ss + ff;
     }
-    
+        
     static int TCIntStrToFrame(int i){
         int hh, mm, ss, ff;
          hh = i / 1_000_000;    // часы

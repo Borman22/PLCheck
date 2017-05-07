@@ -122,8 +122,8 @@ public class PlayList{
         for(event = 1; event < totalEvents; event++){
             if(events[event].getDuration() != (events[event].getTc_out() - events[event].getTc_in())){
                 errDUR++;
-		int intStrTC = TimeCode.TCInFrameToIntStr(events[event].getTc_out() - events[event].getTc_in());
-		TimeCode tempTC = new TimeCode(intStrTC);
+		int tempIntStrTC = TimeCode.TCInFrameToIntStr(events[event].getTc_out() - events[event].getTc_in());
+		TimeCode tempTC = new TimeCode(tempIntStrTC);
                 errors[event][0] = "   DUR_ERROR!(" + tempTC.toString() + ")";
             }
         }
@@ -477,8 +477,7 @@ public class PlayList{
             */
         } //for (int i = 1; i < totalPrograms; i++){
     }  // static void checkFormats(Event[] events)
-                
-     
+
     static void statistic(Event[] events){
         for(event = 1; event < totalEvents; event++){
             System.out.printf("%87s", events[event].toString());

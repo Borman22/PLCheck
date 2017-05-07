@@ -140,11 +140,16 @@ public class Event {
         matcher = pattern.matcher(name); 
 
         if(matcher.find()){
-            //System.out.println(NumberOfEvent + " " + matcher.end(0));//
-            
             return name.substring(tempIndexStart, matcher.end());
         }
         
+	final String es2 = "(s\\d\\de\\d\\d)";
+        pattern = Pattern.compile(es2);
+        matcher = pattern.matcher(name); 
+
+        if(matcher.find()){
+            return name.substring(tempIndexStart, matcher.end());
+        }
         
         int tempIndexEnd = name.indexOf(" сег.");
         int tempIndexVTR = name.indexOf("VTR");
