@@ -42,8 +42,8 @@ public class AllPrograms {
 	{"MS-Juki", "Жуки", "Dali MS-Juki"},
 	{"MS-Monk", "Монк", "Dali MS-Monk"},
 	{"PR-Moment-skalpelya", "Dali PR-Moment-skalpelya"},
-	{"PR-Bytva", "Dali PR-Bytva"}
-	//{"BeetParty", "Свеколки", ""},
+	{"PR-Bytva", "Dali PR-Bytva"},
+	{"BeetParty", "Свеколки", "Dali MS-BeetParty"}
 	//{"PR-Kroliki", ""}
         //{"Карамба", "Dali PR-Karamba"}  // Программу не нашел
     };    
@@ -51,15 +51,15 @@ public class AllPrograms {
     //Мультики, на которые надо ставить знак круг
     public static String[] multsName = {"Numo", "Ernie", "Elmo", "Graysya", "Grover", "Redyska", "Редиска", "BeetParty", "Свеколки", "MS-Bernard", "MS-Fixies-Aeroplan", "MS-Juki", "Жуки", "MS-Monk", "Монк"};
     //Программы, на которые нет склеротиков (для того, чтобы программа не ругалась, что склеротики не установлены)
-    public static String[] withoutDali = {"ambicioznie", "KrasivoJit", "BeetParty", "Свеколки", "PR-Bytva", "MS-Fixies", "Фиксики", "кролики", "Kroliki", "PR-Women", "На чужих ошибках", "PR-Chyzhyeoshybki", "HS-CSI"};
+    public static String[] withoutDali = {"ambicioznie", "KrasivoJit", "MS-Fixies", "Фиксики", "кролики", "Kroliki", "PR-Women", "Женщины не прощают", "На чужих ошибках", "PR-Chyzhyeoshybki", "HS-CSI", "PR-Istorii"};
     
-    public static String[] dynamicScleroticBudni =          {/*"MS-Fixies everyday 0730", */    "PR-Moment-skalpelya today 1900",   "PR-Bytva today 2000"   }; 
-    public static String[] dynamicScleroticVihodnoj =       {/*"MS-Fixies everyday 0730", */    "PR-Moment-skalpelya today 1900",   "PR-Bytva today 2100"   };
-    public static String[] dynamicScleroticDali =           {/*"Dali MS-Fixies", */             "Dali PR-Moment-skalpelya",         "Dali PR-Bytva"         };
-    public static int [] startOfDynamicScleroticBudni =     {/*810000, */                       810000,                             810000                  }; //9.00  9.00
-    public static int [] stopOfDynamicScleroticBudni =      {/*1710000, */                      1710000,                            1800000                 }; //19.00 20.00
-    public static int [] startOfDynamicScleroticVihodnoj =  {/*810000, */                       810000,                             810000                  }; //9.00  9.00
-    public static int [] stopOfDynamicScleroticVihodnoj =   {/*1710000, */                      1710000,                            1890000                 }; // 19.00 21.00
+    public static String[] dynamicScleroticBudni =          {/*"MS-Fixies everyday 0730",     "PR-Moment-skalpelya today 1900",   */"PR-Bytva today 2000"   }; 
+    public static String[] dynamicScleroticVihodnoj =       {/*"MS-Fixies everyday 0730",     "PR-Moment-skalpelya today 1900",   */"PR-Bytva today 2100"   };
+    public static String[] dynamicScleroticDali =           {/*"Dali MS-Fixies",              "Dali PR-Moment-skalpelya",         */"Dali PR-Bytva"         };
+    public static int [] startOfDynamicScleroticBudni =     {/*810000,                        810000,                             */810000                  }; //9.00  9.00
+    public static int [] stopOfDynamicScleroticBudni =      {/*1710000,                       1710000,                            */1800000                 }; //19.00 20.00
+    public static int [] startOfDynamicScleroticVihodnoj =  {/*810000,                        810000,                             */810000                  }; //9.00  9.00
+    public static int [] stopOfDynamicScleroticVihodnoj =   {/*1710000,                       1710000,                            */1890000                 }; // 19.00 21.00
     
     
     

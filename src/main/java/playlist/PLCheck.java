@@ -137,7 +137,7 @@ public class PLCheck{
         checkTCCobaltAsRun(evnt);
         checkFormats(evnt);
         statistic(evnt);
-	sendByNet();
+	//sendByNet();
     }
     
     static void checkTCCobaltAsRun(Event[] events){  //доделать проверку TC_in - TC_out - TC_in
@@ -154,6 +154,7 @@ public class PLCheck{
     static void checkFormats(Event[] events){
         int tempPGM;
         int tempLogo;
+	int tempLogoBitva;
         int tempPartnerGostiFirst; //partner GOSTI в первом субклипе - ошибка.
         int tempPartnerGostiNext;  // отсутствует partner GOSTI в последующих субклипах - ошибка.
         int tempPartner100movFirst;
@@ -186,6 +187,7 @@ public class PLCheck{
         for(event = 1; event < totalEvents; event++ ){
             tempPGM = 0;
             tempLogo = 0;
+	    tempLogoBitva = 0;
             tempPartnerGostiFirst = 0;
             tempPartnerGostiNext = 0;
             tempPartner100movFirst = 0;
@@ -198,12 +200,19 @@ public class PLCheck{
                                                                             //System.out.println(Arrays.deepToString(tempFormat));
             for(int i = 0; i < tempFormat.length; i++){
                                                                             //System.out.println(tempFormat[i]);
-                if(tempFormat[i].equals("PGM"))
+                if(tempFormat[i].contains("PGM"))
                     tempPGM++;
 
-                if( tempFormat[i].equals("logo v2") || tempFormat[i].equals("logo Traur") )
+                if( tempFormat[i].contains("logo v2") || tempFormat[i].contains("logo Traur") )
                     tempLogo++;
+		
+		if( tempFormat[i].contains("Logo for Bitva") )
+                    tempLogoBitva++;
             }
+	    
+	    
+	    
+	    
             
             if(event != 1){      //2 субклипа подряд или нет
                 canonicalName = events[event].getCanonicalName();
@@ -219,9 +228,9 @@ public class PLCheck{
                 errors[event][1] = "   PGM_ERROR!";
             }
             
-            if(tempLogo != 1){
+            if( (tempLogo + tempLogoBitva) != 1 ){
                 errLogoFormat++;
-                errors[event][2] = "   Logo_ERROR!";
+                errors[event][2] = "   Logo_ERROR! " + tempLogo + tempLogoBitva;
             }
             
             
@@ -564,7 +573,7 @@ public class PLCheck{
                 if( (subClip != (programs[program][9] - 1)) && (tempDali != 0)){
 		    errors[programs[program][subClip]][7] = "   format_Dali_ERROR!"; // (не должно быть Dali на всех субклипах, кроме последнего)
 		    errDaliFormat++;
-		    if((subClip == 0) && (programs[program][0] == programs[program][1]) && errors[programs[program][subClip]][7].equals("   format_Dali_ERROR!")){
+		    if((subClip == 0) && (programs[program][0] == programs[program][1]) && errors[programs[program][subClip]][7].contains("   format_Dali_ERROR!")){
 			errors[programs[program][subClip]][7] = null; // (На Dali не обращаем внимание - когда первый субклип не найден - он считается отдельной программой и на него ставится еррор)
 			errDaliFormat--;
 		    }
@@ -583,7 +592,7 @@ public class PLCheck{
 				errDaliFormat++;
 			    }
                 } else if(  (subClip == (programs[program][9] - 1)) && (tempDali != 0) && (events[programs[program][subClip]].getDuration() < 3375) ){
-		    errors[programs[program][subClip]][7] = "   format_Dali_ERROR!"; // (здесь не должно быть format Dali)
+		    errors[programs[program][subClip]][7] = "   format_Dali_ERROR! [<2:15]"; // (здесь не должно быть format Dali)
 		    errDaliFormat++;
 		}
                 /*if( (subClip == (programs[program][9] - 1)) && (tempDali != 1)){
