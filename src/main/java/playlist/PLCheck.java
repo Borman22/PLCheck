@@ -3,12 +3,13 @@ import java.util.Scanner;
 import java.io.File;
 import java.io.*;
 import java.util.Arrays;
+import java.util.Date;
 import javax.swing.JOptionPane;
 
 public class PLCheck{
     static String[][] m = new String[1000][15];  // [event, strOfEvent]
     static Event [] evnt = new Event[1000];
-    static String[][] errors = new String[1000][13];
+    static String[][] errors = new String[1000][15];
     static int programs[][] = new int[100][10];
     static Scanner scn;
     static boolean flagEquals;
@@ -21,7 +22,8 @@ public class PLCheck{
     static int name = 0; 
     static int tc_in = 0; 
     //static int tc_out = 0;
-    static int id = 0;    
+    static int id = 0;  
+    static int errFormat = 0;
     static int errPGMFormat = 0; 
     static int errLogoFormat = 0;
     static int errGOSTIFormat = 0;
@@ -37,6 +39,7 @@ public class PLCheck{
     static int errAnonsProgram = 0;
     static int number = 0;
     static int errDaliFormat = 0;
+    static int errZnakKrugFormat = 0;
     static String canonicalName;
     
     public static String[][] progNameAndDali = {
@@ -52,7 +55,7 @@ public class PLCheck{
 	{"Grover", "Dali MS-Grover"},
 	{"Redyska", "Редиска", "Dali MS-Rediska"},
 	{"3x4", "Зх4", "Dali PR-3x4"},
-	{"Amerika", "Dali PR-Amerika Mae Talant"},
+	{"Amerika", "Америка имеет талант", "Dali PR-Amerika Mae Talant"},
 	{"Anatomiya", "Анатомия славы", "Dali PR-Anatomiya Slavy"},
 	{"Pozhenimsya", "Dali PR-Davay Pozhenimsya"},
 	{"Enyky", "Эники", "Dali PR-Enyky Benyky"},
@@ -63,9 +66,9 @@ public class PLCheck{
 	{"More", "Море по колено", "MK_", "Dali PR-More po kolino"},
 	{"Jamies 15", "Jamies15", "Jamies_15", "Обед за 15 минут", "Dali PR-Oliver 15min"},
 	{"za 30 min", "Обед за 30 минут", "Jamies30M", "JO30MM", "Dali PR-Oliver 30min"},
-	{"Jamies_Big_Festival", "Dali PR-Oliver Festival"},
+	{"Jamies_Big_Festival", "Кормчий Джейми", "Харчевой Джейми", "Dali PR-Oliver Festival"},
 	{"Jamies Great Britain", "Британская кухня", "Dali PR-Oliver Great Britain"},
-	{"Jamies_American_Road_Trip", "Кулинарные путешествия", "Dali PR-Oliver Mandrivki"},   // ?????????????????   Великий Кормчий Джейми 1 с. Великий Харчевой Джейми сег. 1-2
+	{"Jamies_American_Road_Trip", "Кулинарные путешествия", "Dali PR-Oliver Mandrivki"},
 	{"_Twist", "Рецепты Джейми", "Dali PR-Oliver Recepty"},
 	{"Paral", "Dali PR-Paralelniy Svit"},
 	{"Rozkishne", "Dali PR-Rozkishne zhittya"},
@@ -76,10 +79,18 @@ public class PLCheck{
         //{"Карамба", "Dali PR-Karamba"}
     };
     
+    public static String[] multsName = {"Numo", "Ernie", "Elmo", "Graysya", "Grover", "Redyska", "Редиска", "BeetParty", "Bernard", "Свеколки"};
+    public static String[] withoutDali = {"ambicioznie", "KrasivoJit", "BeetParty", "Свеколки"};
+
+    
     public static void main(String[] args)  throws FileNotFoundException, IOException  {
+	long start = System.currentTimeMillis();
         openFile();
         readFile();
         checkPlayListFileCobaltAsRun();
+	long stop = System.currentTimeMillis();
+	System.out.println("");
+	System.out.println("Плейлист проверен за " + (stop - start) + " мс");
     }
     
     private static void openFile(){
@@ -197,6 +208,7 @@ public class PLCheck{
             tempPartner100movFirst = 0;
             tempPartner100movNext = 0;
             thisIsNextSubclip = false;
+	    
    
             
             tempFormat = events[event].getFormat();
@@ -221,16 +233,49 @@ public class PLCheck{
             
             if(tempPGM != 1){
                 errPGMFormat++;
-                errors[event][1] = "  PGM_ERROR!";
+                errors[event][1] = "   PGM_ERROR!";
             }
             
             if(tempLogo != 1){
                 errLogoFormat++;
-                errors[event][2] = "  Logo_ERROR!";
+                errors[event][2] = "   Logo_ERROR!";
             }
             
             
-                
+	    
+	    
+	    
+	            //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            // Проверяем знак круг
+	    boolean thisIsMult = isThisMult(events[event].getName());
+            int znakKrug = 0;
+	    int znakKrugMT = 0; //manual time
+            for (String tempFormat1 : tempFormat){  //перебираем форматы в текущем субклипе - programs[program][subClip]
+                if (tempFormat1.equals("znak krug")) 
+                    znakKrug++;
+                if ( tempFormat1.equals("znak krug manual") )
+                    znakKrugMT++;
+            }
+	    if(thisIsMult){ // Это мультик
+		if(events[event].getDuration() > 4500){ // > 3 минут
+		    if( !((znakKrug == 1) && (znakKrugMT == 0)) ){
+			errZnakKrugFormat++;
+			errors[event][13] = "   format znak krug_ERROR!_(must be [znak krug] )";
+		    }
+		} else {   // < 3 минут
+		    if( !((znakKrug == 0) && (znakKrugMT == 1)) ){
+			errZnakKrugFormat++;
+			errors[event][13] = "   format znak krug_ERROR!_(must be [znak krug manual] )";
+		    }
+		}	
+		   
+            } else { // это не мультик
+		if((znakKrug + znakKrugMT) != 0){
+		    errZnakKrugFormat++;
+		    errors[event][13] = "   format znak krug_ERROR!";
+		}
+	    }
+
             // partner GOSTI
             if( (events[event].getName().contains("Jamies") || events[event].getName().contains("Oliver")) & !events[event].getName().contains("A-")){
                 if(! (events[event].getName().contains("Christmas") || events[event].getName().contains("Great") || events[event].getName().contains("Trip") || events[event].getName().contains("Big")) ){
@@ -293,7 +338,7 @@ public class PLCheck{
             } // partner GOSTI !(Jamies 15" || "Oliver")
 
             // partner 100mov
-            if( (events[event].getName().contains("Anatomiya") || events[event].getName().contains("Amerika")) & !events[event].getName().contains("A-")){
+            if( (events[event].getName().contains("Anatomiya") || events[event].getName().contains("Amerika") || events[event].getName().contains("Америка имеет талант")) & !events[event].getName().contains("A-")){
                 if(events[event].getTc_in() == 0){
                     if(!events[event+1].getName().equals("SP-100movPartner")){
                         errSP100movParnerMpg++;
@@ -432,10 +477,19 @@ public class PLCheck{
         
         //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         
-        
-        
-        
-        
+        //Проходимся по всем событиям, кроме программ и смотрим, чтобы было только по 2 формата
+        for(event = 1; event < totalEvents; event++){
+            if(!isThisProgramsSubclip(event)){
+                tempFormat = events[event].getFormat();
+                if(tempFormat.length != 2){
+		    errors[event][12] = "   format_ERROR!_(must be only 2 formats - [PGM, logo] )"; 
+		    errFormat++;
+		}
+	    }
+	}
+	
+	
+	
         // проверяем все форматы программ
         for (int program = 1; program < totalPrograms+1; program++){
         /*    //if(programs[program][0] != 0)
@@ -456,10 +510,10 @@ public class PLCheck{
 	    System.out.printf("%100s-----------\n\n", formatDali);
             System.out.println();
 	*/
-        //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-            
+  
+		    
             //text for Americas got talent off            
-            if(events[programs[program][0]].getName().contains("Amerika")){
+            if(events[programs[program][0]].getName().contains("Amerika") || events[programs[program][0]].getName().contains("Америка имеет талант")){
                 for(subClip = 0; subClip < programs[program][9]; subClip++){  //перебераем все субклипы в этой программе
                     tempFormat = events[programs[program][subClip]].getFormat(); 
                     tempAmericasGotTalentON = 0;
@@ -503,29 +557,47 @@ public class PLCheck{
                 }
                    // System.out.println("[" + program + "][" + subClip + "]  Dali = " + tempDali + " " + tempFormat1 + "              subClip = " + subClip + "  (programs[program][9] - 1) =" + (programs[program][9] - 1) );
                 if( (subClip != (programs[program][9] - 1)) && (tempDali != 0)){
-		    errors[programs[program][subClip]][7] = "   format_Dali_ERROR!"; // (не должно быть Dali)
+		    errors[programs[program][subClip]][7] = "   format_Dali_ERROR!"; // (не должно быть Dali на всех субклипах, кроме последнего)
 		    errDaliFormat++;
 		    if((subClip == 0) && (programs[program][0] == programs[program][1]) && errors[programs[program][subClip]][7].equals("   format_Dali_ERROR!")){
-			errors[programs[program][subClip]][7] = null; // (На Dali не обращаем внимание)
+			errors[programs[program][subClip]][7] = null; // (На Dali не обращаем внимание - когда первый субклип не найден - он считается отдельной программой и на него ставится еррор)
 			errDaliFormat--;
 		    }
                 }
-                if( (subClip == (programs[program][9] - 1)) && (tempDali != 1)){
+		
+		
+		
+		if( (subClip == (programs[program][9] - 1)) && ((tempDali != 1) && (events[programs[program][subClip]].getDuration() > 3375))){  // > 2:15   
+		    if(program < totalPrograms) { // Это не последняя программа, так что можно обратиться к следующей
+			if(!isWithoutDali(events[programs[program+1][0]].getName()) ){  //не пишем ошибку, если следующий клип HS-Krasivie-i-ambicioznie, KrasivoJit, BeetParty
+			    errors[programs[program][subClip]][7] = "   format_Dali_ERROR!"; // (ожидается format Dali)
+			    errDaliFormat++;
+			}
+		    } else  { // Это последняя программа
+				errors[programs[program][subClip]][7] = "   format_Dali_ERROR!"; // (ожидается format Dali)
+				errDaliFormat++;
+			    }
+                } else if(  (subClip == (programs[program][9] - 1)) && (tempDali != 0) && (events[programs[program][subClip]].getDuration() < 3375) ){
+		    errors[programs[program][subClip]][7] = "   format_Dali_ERROR!"; // (здесь не должно быть format Dali)
+		    errDaliFormat++;
+		}
+                /*if( (subClip == (programs[program][9] - 1)) && (tempDali != 1)){
                     if(! ((events[programs[(program < totalPrograms) ? (program+1) : program][0]].getName().contains("ambicioznie")) || (events[programs[(program < totalPrograms) ? (program+1) : program][0]].getName().contains("KrasivoJit")) || (events[programs[(program < totalPrograms) ? (program+1) : program][0]].getName().contains("BeetParty")))){  //не пишем ошибку, если следующий клип (если он есть) HS-Krasivie-i-ambicioznie, KrasivoJit
                         errors[programs[program][subClip]][7] = "   format_Dali_ERROR!"; // (ожидается format Dali)
                         errDaliFormat++;
                     }
-                } 
+                }*/
+		
             }   //for(subClip = 0; subClip < programs[program][9]; subClip++){ //перебераем все субклипы в этой программе
 	    
 	    if(program != 1){
 		formatDali = getDali(events[programs[program][0]].getName());
 		String [] tempFormat2 = events[programs[program-1][programs[program-1][9] - 1]].getFormat();
-	//System.out.println(Arrays.deepToString(tempFormat2) + "    " + formatDali + "      это программа  " + events[programs[program][0]].getName());
 		boolean sameFormat = false;
 		for(String tempFormat21:tempFormat2)
 		    if(tempFormat21.equals(formatDali))
 			sameFormat = true;
+		if(events[programs[program-1][programs[program-1][9] - 1]].getDuration() > 3375)
 		    if(!formatDali.equals("") && !sameFormat){
 			if(errors[programs[program - 1][programs[program-1][9] - 1]][7] != null){
 			    errors[programs[program - 1][programs[program-1][9] - 1]][7] = errors[programs[program - 1][programs[program-1][9] - 1]][7].concat("  must be   [ " + formatDali + " ]");
@@ -543,7 +615,7 @@ public class PLCheck{
             System.out.printf("%87s", events[event].toString());
             System.out.printf("%-60s", events[event].getName());
             System.out.print(".");
-            for(int i = 0; i < 13; i++){
+            for(int i = 0; i < errors[0].length; i++){
                 if (errors[event][i] != null)
                     System.out.print(errors[event][i]); //System.out.printf("%8s\n", number);  
             }
@@ -552,7 +624,7 @@ public class PLCheck{
         
 
         System.out.println("");
-        System.out.println("                                ВСЕГО ОШИБОК: " + (errDUR + errTC + errPGMFormat + errLogoFormat + errGOSTIFormat + err100movFormat + errTextAmerikaON + errTextAmerikaOFF + errSP100movParnerMpg + errSPGostiParnerMpg + errDaliFormat + errAnonsDate + errAnonsTime + errAnonsProgram));
+        System.out.println("                                ВСЕГО ОШИБОК: " + (errDUR + errTC + errPGMFormat + errLogoFormat + errGOSTIFormat + err100movFormat + errTextAmerikaON + errTextAmerikaOFF + errSP100movParnerMpg + errSPGostiParnerMpg + errDaliFormat + errAnonsDate + errAnonsTime + errAnonsProgram + errFormat + errZnakKrugFormat));
         
         System.out.println("");
         if(errDUR != 0) System.out.println("Ошибок в Duration: " + errDUR);
@@ -566,6 +638,9 @@ public class PLCheck{
         if(errSP100movParnerMpg != 0) System.out.println("Ошибок в SP-100movPartner.mpg: " + errSP100movParnerMpg);
         if(errSPGostiParnerMpg != 0) System.out.println("Ошибок в SP-GOSTI.mpg: " + errSPGostiParnerMpg);
         if(errDaliFormat != 0) System.out.println("Ошибок в format  Dali... : " + errDaliFormat);
+	if(errFormat != 0) System.out.println("Ошибок в format: " + errFormat);
+	if(errZnakKrugFormat != 0) System.out.println("Ошибок в format znak krug: " + errZnakKrugFormat);
+	 
         
         if(errAnonsDate != 0) System.out.println("Ошибок в дате анонса: " + errAnonsDate);
         if(errAnonsTime != 0) System.out.println("Ошибок во времени анонса: " + errAnonsTime);
@@ -573,9 +648,9 @@ public class PLCheck{
 
         System.out.println("");
         System.out.println("Проверить вручную:");
-        System.out.println("1. Знак круг");
+        System.out.println("1. Знак квадрат");
         System.out.println("2. Знак треугольник");
-        //System.out.println("3. Склеротики (названия программ)");
+        
     }
     
     private static String getDali(String programName) {
@@ -584,6 +659,34 @@ public class PLCheck{
                 if (programName.contains(progNameAndDali1[j]))
                     return progNameAndDali1[progNameAndDali1.length - 1];
         return "";
-    }    
+    }
+    
+    private static boolean isThisProgramsSubclip(int numberOfEvent){
+	for (int i = 1; i < totalPrograms+1; i++){
+	    for (int j = 0; j < programs[i][9]; j++) {
+		if(numberOfEvent == programs[i][j])
+		    return true;
+		if(numberOfEvent < programs[i][j])
+		    break;
+	    }
+	}
+	return false;
+    }
+    
+    private static boolean isThisMult(String programName){
+	boolean bool = false;
+	for (String str : multsName)
+	    if(programName.contains(str))
+		bool = true;
+	return bool;
+    }
+    
+    private static boolean isWithoutDali(String programName){
+	boolean bool = false;
+	for (String str : withoutDali)
+	    if(programName.contains(str))
+		bool = true;
+	return bool;
+    }
 }
-
+    
