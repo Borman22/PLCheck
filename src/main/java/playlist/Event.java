@@ -97,7 +97,7 @@ public class Event {
     
     @Override
     public String toString(){
-        return "Time = " + time.toString() + "   IN = " + tc_in.toString() + "   OUT = " + tc_out.toString() + "   DUR = " + duration.toString() + "   " + asset_id + "   "  + name + "       ";
+        return "Time = " + time.toString() + "   IN = " + tc_in.toString() + "   OUT = " + tc_out.toString() + "   DUR = " + duration.toString() + "   ";
     }
     String strContents(String str, String teg_start, String teg_stop){
          return str.substring((str.indexOf(teg_start) + teg_start.length()), str.lastIndexOf(teg_stop));

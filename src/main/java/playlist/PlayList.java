@@ -1,7 +1,7 @@
 package playlist;
 import java.util.Scanner;
 import java.io.File;
-import java.util.Arrays;
+import java.io.*;
 import javax.swing.JOptionPane;
 
 public class PlayList{
@@ -30,8 +30,9 @@ public class PlayList{
     static int errSP100movParnerMpg = 0;
     static int errSPGostiParnerMpg = 0;
     static int number = 0;
+    
 
-    public static void main(String[] args) {
+    public static void main(String[] args)  throws FileNotFoundException, IOException  {
         openFile();
         readFile();
         checkPlayListFileCobaltAsRun();
@@ -41,14 +42,31 @@ public class PlayList{
     //evnt[1] = new Event();
     //evnt[1].setDate("<date>2015-06-24</date>");
      }
+ 
+    /*
+    BufferedReader f=new BufferedReader(
+                   new InputStreamReader(new  FileInputStream(ZoneFolder+filename),"Utf8"));
+        if (f == null) return false;
+        String s;
+        while ((s = f.readLine()) != null)
+        {
+            s = s.trim();
+            if (s.length() > 0) parse(s);
+        }
+        f.close();
+    */
+
+    
+    
+    
     private static void openFile(){
             try{
-                scn = new Scanner(new File("d://Borman//1"));
+                scn = new Scanner((new File("d://Borman//1")), "UTF-8");
             } catch(Exception e){JOptionPane.showMessageDialog(null, "Файл не найден");}
         } 
-
+  
     private static void readFile(){
-        while(scn.hasNext()){
+        while(scn.hasNextLine()){
             try{
                 bufStrOfEvent = scn.nextLine();
                 if (bufStrOfEvent.equals("<event>")){
@@ -63,12 +81,10 @@ public class PlayList{
                 return;
             }
         }
+//*/
         m[event][14] = Integer.toString(strOfEvent);
         totalEvents = ++event;
-        
-        
 
-        
         for(int i = 1; i < totalEvents; i++){
             evnt[i] = new Event();
             evnt[i].setDate(m[i][1]);
@@ -211,12 +227,13 @@ public class PlayList{
             }
             
             if(event != 1){      //2 субклипа подряд или нет
-                boolean sameName = false;
+                boolean sameName;
                 int tempIndexOf;
                 String currentName = events[event].getName();
                 int i = events[event].getTc_in() - events[event-1].getTc_out();
                 i = (i > 0) ? i : -i;
-                if((tempIndexOf = currentName.indexOf(" сег.")) != -1)
+                tempIndexOf = currentName.indexOf(" сег.");
+                if(tempIndexOf != -1)
                     currentName = currentName.substring(0, tempIndexOf);
                 sameName = events[event-1].getName().startsWith(currentName);
                 thisIsNextSubclip = ((i < 25) & sameName);
@@ -236,56 +253,64 @@ public class PlayList{
                 
             // partner GOSTI
             if( (events[event].getName().contains("Jamies") || events[event].getName().contains("Oliver")) & !events[event].getName().contains("A-")){
-                if(events[event].getTc_in() == 0){  // первый клип
-                    if(!events[event+1].getName().equals("SP-GOSTI")){
-                        errSPGostiParnerMpg++;
-                        errors[event+1][3] = "   SP-GOSTI.mpg_ERROR!";   //Ошибка. Нет SP-GOSTI.mpg
-                    }
-                    for (String tempFormat1 : tempFormat)
-                        if (tempFormat1.contains("partner GOSTI")) 
-                            tempPartnerGostiFirst++;  // Ошибка. В первом субклипе не должно быть partner GOSTI
+                if(! (events[event].getName().contains("Christmas") || events[event].getName().contains("Great") || events[event].getName().contains("Trip") || events[event].getName().contains("Big")) ){
+                    if(events[event].getTc_in() == 0){  // первый клип
+                        if(!events[event+1].getName().equals("SP-GOSTI")){
+                            errSPGostiParnerMpg++;
+                            errors[event+1][3] = "   SP-GOSTI.mpg_ERROR!";   //Ошибка. Нет SP-GOSTI.mpg
+                        }
+                        for (String tempFormat1 : tempFormat)
+                            if (tempFormat1.contains("partner GOSTI")) 
+                                tempPartnerGostiFirst++;  // Ошибка. В первом субклипе не должно быть partner GOSTI
+                        if(tempPartnerGostiFirst > 0){
+                            errors[event][4] = "   format_GOSTI_ERROR";
+                            errGOSTIFormat++;
+                        }
+                    } else {    // <не первый клип>
+                        for (String tempFormat1 : tempFormat)
+                            if (tempFormat1.contains("partner GOSTI")) 
+                                tempPartnerGostiNext++;
+                        if(tempPartnerGostiNext != 1) {     //нет partner GOSTI
+                            if(thisIsNextSubclip){  // следующий субклип
+                                if(events[event - 1].getTc_in() == 0){  //предыдущий субклип начинается с 00
+                                    errors[event][4] = "   format_GOSTI_ERROR";
+                                    errGOSTIFormat++;
+                                } else {                                //предыдущий субклип начинается не с 00
+                                    if(errors[event - 1][4] != null){   // в предыдущем субклипе была ошибка
+                                        errors[event][4] = "   format_GOSTI_ERROR";
+                                        errGOSTIFormat++;
+                                    }
+                                }
+                            } else {                // НЕ следующий субклип
+                                errors[event][4] = "   format_GOSTI_ERROR";
+                                errGOSTIFormat++;
+                            }
+                        } else {                            //есть partner GOSTI
+                            if(thisIsNextSubclip){  //это следующий субклип
+                                if(events[event - 1].getTc_in() != 0){  //предыдущий субклип начинается НЕ с 00
+                                    if(errors[event - 1][4] != null){   // в предыдущем субклипе была ошибка
+                                        errors[event-1][4] = null;
+                                        errGOSTIFormat--;
+                                    } else {                            // в предыдущем субклипе небыло ошибки
+                                        errors[event][4] = "   format_GOSTI_ERROR";
+                                        errGOSTIFormat++;
+                                    }
+                                } //предыдущий субклип начинается с 00
+                            }                       // НЕ следующий субклип
+                        }
+                    }           // </не первый клип>
+                } else {            //не 15 минут, не рецепты и не 30 минут
+                    if(events[event].getName().contains("Jamies"))
+                        for (String tempFormat1 : tempFormat)
+                            if (tempFormat1.contains("partner GOSTI")) 
+                                tempPartnerGostiFirst++;  // Ошибка. В первом субклипе не должно быть partner GOSTI
                     if(tempPartnerGostiFirst > 0){
                         errors[event][4] = "   format_GOSTI_ERROR";
                         errGOSTIFormat++;
                     }
-                } else {    // <не первый клип>
-                    for (String tempFormat1 : tempFormat)
-                        if (tempFormat1.contains("partner GOSTI")) 
-                            tempPartnerGostiNext++;
-                    if(tempPartnerGostiNext != 1) {     //нет partner GOSTI
-                        if(thisIsNextSubclip){  // следующий субклип
-                            if(events[event - 1].getTc_in() == 0){  //предыдущий субклип начинается с 00
-                                errors[event][4] = "   format_GOSTI_ERROR";
-                                errGOSTIFormat++;
-                            } else {                                //предыдущий субклип начинается не с 00
-                                if(errors[event - 1][4] != null){   // в предыдущем субклипе была ошибка
-                                    errors[event][4] = "   format_GOSTI_ERROR";
-                                    errGOSTIFormat++;
-                                }
-                            }
-                            
-                        } else {                // НЕ следующий субклип
-                            errors[event][4] = "   format_GOSTI_ERROR";
-                            errGOSTIFormat++;
-                        }
-                    } else {                            //есть partner GOSTI
-                        if(thisIsNextSubclip){  //это следующий субклип
-                            if(events[event - 1].getTc_in() != 0){  //предыдущий субклип начинается НЕ с 00
-                                if(errors[event - 1][4] != null){   // в предыдущем субклипе была ошибка
-                                    errors[event-1][4] = null;
-                                    errGOSTIFormat--;
-                                } else {                            // в предыдущем субклипе небыло ошибки
-                                    errors[event][4] = "   format_GOSTI_ERROR";
-                                    errGOSTIFormat++;
-                                }
-                            } //предыдущий субклип начинается с 00
-                        }                       // НЕ следующий субклип
-                    }
-                }           // </не первый клип>
-            }  // partner GOSTI if()
-             
-            
-            
+                }
+            } // partner GOSTI !(Jamies 15" || "Oliver")
+
             // partner 100mov
             if( (events[event].getName().contains("Anatomiya") || events[event].getName().contains("Amerika")) & !events[event].getName().contains("A-")){
                 if(events[event].getTc_in() == 0){
@@ -307,17 +332,17 @@ public class PlayList{
                     if(tempPartner100movNext != 1){     //нет partner 100mov
                         if(thisIsNextSubclip){  // следующий субклип
                             if(events[event - 1].getTc_in() == 0){  //предыдущий субклип начинается с 00
-                                errors[event][4] = "   format_100mov_ERROR";
+                                errors[event][4] = "   format_100mov_ERROR1";
                                 err100movFormat++;
                             } else {                                //предыдущий субклип начинается не с 00
                                 if(errors[event - 1][4] != null){   // в предыдущем субклипе была ошибка
-                                    errors[event][4] = "   format_100mov_ERROR";
+                                    errors[event][4] = "   format_100mov_ERROR2";
                                     err100movFormat++;
                                 }
                             }
                             
                         } else {                // НЕ следующий субклип
-                            errors[event][4] = "   format_100mov_ERROR";
+                            errors[event][4] = "   format_100mov_ERROR3";
                             err100movFormat++;
                         }
                     } else {                            //есть partner 100mov
@@ -327,7 +352,7 @@ public class PlayList{
                                     errors[event-1][4] = null;
                                     err100movFormat--;
                                 } else {                            // в предыдущем субклипе небыло ошибки
-                                    errors[event][4] = "   format_100mov_ERROR";
+                                    errors[event][4] = "   format_100mov_ERROR4";
                                     err100movFormat++;
                                 }
                             } //предыдущий субклип начинается с 00
@@ -363,6 +388,13 @@ public class PlayList{
             }
             System.out.println("");
         }
+        
+                
+        System.out.println("");
+        System.out.println("");
+        System.out.println("                                ВСЕГО ОШИБОК: " + (totalErrDUR + totalErrTC + errPGMFormat + errLogoFormat + errGOSTIFormat + err100movFormat + errTextAmerikaON + errTextAmerikaOFF + errSP100movParnerMpg + errSPGostiParnerMpg));
+        
+        System.out.println("");
         System.out.println("");
         System.out.println("Ошибок в Duration: " + totalErrDUR);
         //System.out.println("Ошибок в таймкоде: " + totalErrTC);
@@ -374,15 +406,13 @@ public class PlayList{
         //System.out.println("Ошибок в format  text for Americas got talent off: " + errTextAmerikaOFF);
         System.out.println("Ошибок в SP-100movPartner.mpg: " + errSP100movParnerMpg);
         System.out.println("Ошибок в SP-GOSTI.mpg: " + errSPGostiParnerMpg);
-        
-        
- 
+
+        System.out.println("");
         System.out.println("Проверить вручную:");
-        System.out.println("1. На мультиках знак круг");
-        System.out.println("2. text for Americas got talent off");
-        System.out.println("3. ");
-        
+        System.out.println("1. Знак круг");
+        System.out.println("2. Знак треугольник");
+        System.out.println("3. text for Americas got talent off");
+        System.out.println("4. Склеротики");
     }
-    
 }
 
