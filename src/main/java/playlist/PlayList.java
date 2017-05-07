@@ -186,6 +186,7 @@ public class PlayList{
         int tempPartner100movNext;
         int tempAmericasGotTalentON;
         int tempAmericasGotTalentOFF;
+        boolean thisIsNextSubclip;
         
         for(event = 1; event < totalEvents; event++ ){
             tempPGM = 0;
@@ -196,6 +197,7 @@ public class PlayList{
             tempPartner100movNext = 0;
             tempAmericasGotTalentON = 0;
             tempAmericasGotTalentOFF = 0;
+            thisIsNextSubclip = false;
             
             String [] tempFormat = events[event].getFormat();
                                                                             //System.out.println(Arrays.deepToString(tempFormat));
@@ -206,6 +208,18 @@ public class PlayList{
 
                 if( tempFormat[i].equals("logo v2") || tempFormat[i].equals("logo Traur") )
                     tempLogo++;
+            }
+            
+            if(event != 1){      //2 субклипа подряд или нет
+                boolean sameName = false;
+                int tempIndexOf;
+                String currentName = events[event].getName();
+                int i = events[event].getTc_in() - events[event-1].getTc_out();
+                i = (i > 0) ? i : -i;
+                if((tempIndexOf = currentName.indexOf(" сег.")) != -1)
+                    currentName = currentName.substring(0, tempIndexOf);
+                sameName = events[event-1].getName().startsWith(currentName);
+                thisIsNextSubclip = ((i < 25) & sameName);
             }
             
             if(tempPGM != 1){
@@ -222,8 +236,7 @@ public class PlayList{
                 
             // partner GOSTI
             if( (events[event].getName().contains("Jamies") || events[event].getName().contains("Oliver")) & !events[event].getName().contains("A-")){
-                //System.out.println("saasfsdadadDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
-                if(events[event].getTc_in() == 0){
+                if(events[event].getTc_in() == 0){  // первый клип
                     if(!events[event+1].getName().equals("SP-GOSTI")){
                         errSPGostiParnerMpg++;
                         errors[event+1][3] = "   SP-GOSTI.mpg_ERROR!";   //Ошибка. Нет SP-GOSTI.mpg
@@ -235,19 +248,45 @@ public class PlayList{
                         errors[event][4] = "   format_GOSTI_ERROR";
                         errGOSTIFormat++;
                     }
-                } else {
+                } else {    // <не первый клип>
                     for (String tempFormat1 : tempFormat)
                         if (tempFormat1.contains("partner GOSTI")) 
                             tempPartnerGostiNext++;
-                    if(tempPartnerGostiNext != 1){
-                        errors[event][4] = "   format_GOSTII_ERROR";
-                        errGOSTIFormat++;
+                    if(tempPartnerGostiNext != 1) {     //нет partner GOSTI
+                        if(thisIsNextSubclip){  // следующий субклип
+                            if(events[event - 1].getTc_in() == 0){  //предыдущий субклип начинается с 00
+                                errors[event][4] = "   format_GOSTI_ERROR";
+                                errGOSTIFormat++;
+                            } else {                                //предыдущий субклип начинается не с 00
+                                if(errors[event - 1][4] != null){   // в предыдущем субклипе была ошибка
+                                    errors[event][4] = "   format_GOSTI_ERROR";
+                                    errGOSTIFormat++;
+                                }
+                            }
+                            
+                        } else {                // НЕ следующий субклип
+                            errors[event][4] = "   format_GOSTI_ERROR";
+                            errGOSTIFormat++;
+                        }
+                    } else {                            //есть partner GOSTI
+                        if(thisIsNextSubclip){  //это следующий субклип
+                            if(events[event - 1].getTc_in() != 0){  //предыдущий субклип начинается НЕ с 00
+                                if(errors[event - 1][4] != null){   // в предыдущем субклипе была ошибка
+                                    errors[event-1][4] = null;
+                                    errGOSTIFormat--;
+                                } else {                            // в предыдущем субклипе небыло ошибки
+                                    errors[event][4] = "   format_GOSTI_ERROR";
+                                    errGOSTIFormat++;
+                                }
+                            } //предыдущий субклип начинается с 00
+                        }                       // НЕ следующий субклип
                     }
-                }
+                }           // </не первый клип>
             }  // partner GOSTI if()
              
+            
+            
             // partner 100mov
-            // доделать, чтобы если 2 файла стоят рядом
             if( (events[event].getName().contains("Anatomiya") || events[event].getName().contains("Amerika")) & !events[event].getName().contains("A-")){
                 if(events[event].getTc_in() == 0){
                     if(!events[event+1].getName().equals("SP-100movPartner")){
@@ -265,14 +304,39 @@ public class PlayList{
                     for (String tempFormat1 : tempFormat)
                         if (tempFormat1.contains("partner 100mov")) 
                             tempPartner100movNext++;
-                    if(tempPartner100movNext != 1){
-                        errors[event][4] = "   format_100mov_ERROR";   
-                        err100movFormat++;  
+                    if(tempPartner100movNext != 1){     //нет partner 100mov
+                        if(thisIsNextSubclip){  // следующий субклип
+                            if(events[event - 1].getTc_in() == 0){  //предыдущий субклип начинается с 00
+                                errors[event][4] = "   format_100mov_ERROR";
+                                err100movFormat++;
+                            } else {                                //предыдущий субклип начинается не с 00
+                                if(errors[event - 1][4] != null){   // в предыдущем субклипе была ошибка
+                                    errors[event][4] = "   format_100mov_ERROR";
+                                    err100movFormat++;
+                                }
+                            }
+                            
+                        } else {                // НЕ следующий субклип
+                            errors[event][4] = "   format_100mov_ERROR";
+                            err100movFormat++;
+                        }
+                    } else {                            //есть partner 100mov
+                        if(thisIsNextSubclip){  //это следующий субклип
+                            if(events[event - 1].getTc_in() != 0){  //предыдущий субклип начинается НЕ с 00
+                                if(errors[event-1][4] != null){   // в предыдущем субклипе была ошибка
+                                    errors[event-1][4] = null;
+                                    err100movFormat--;
+                                } else {                            // в предыдущем субклипе небыло ошибки
+                                    errors[event][4] = "   format_100mov_ERROR";
+                                    err100movFormat++;
+                                }
+                            } //предыдущий субклип начинается с 00
+                        }                       // НЕ следующий субклип
                     }
-                }
-            }// partner 100mov if()
-            
- 
+                }           // </не первый клип>
+            }  // partner 100mov if()                        
+
+
                              
             // text for Americas got talent
             if((events[event].getName().contains("Amerika")) & !events[event].getName().contains("A-")){
@@ -312,7 +376,7 @@ public class PlayList{
         System.out.println("Ошибок в SP-GOSTI.mpg: " + errSPGostiParnerMpg);
         
         
-        System.out.println("Если 2 файла Америки, Анатомии или Оливера идут подряд, программа ожидает на обоих (partner GOSTI)/(partner 100mov) - поэтому будет на один из них ругаться");
+ 
         System.out.println("Проверить вручную:");
         System.out.println("1. На мультиках знак круг");
         System.out.println("2. text for Americas got talent off");
