@@ -291,7 +291,7 @@ public class PLCheck{
 	    for (String tempFormat1 : tempFormat)  //перебираем форматы в текущем субклипе - programs[program][subClip]
 		if (tempFormat1.equals("znak krug 16")) 
 		    znakKrug16++;
-	    if(events[event].getName().contains("HS-")||events[event].getName().contains("Секс и город")||events[event].getName().contains("Морская полиция")){  // Это сериал
+	    if(events[event].getName().contains("HS-")||events[event].getName().contains("Секс и город")||events[event].getName().contains("Морская полиция")||events[event].getName().contains("Медиум")){  // Это сериал
 		if(znakKrug16 != 1){
 			errZnakKrug16Format++;
 			errors[event][14] = "   format znak krug 16_ERROR!";
@@ -303,7 +303,7 @@ public class PLCheck{
 		}
 	    }
                        
-/*
+
             
             // partner GOSTI
             if( (events[event].getName().contains("Jamies") || events[event].getName().contains("Oliver")) & !events[event].getName().contains("A-")){
@@ -366,7 +366,7 @@ public class PLCheck{
 //                }
                 
             } // partner GOSTI !(Jamies 15" || "Oliver")
-*/
+
             // partner 100mov
             if( (events[event].getName().contains("Anatomiya") || events[event].getName().contains("Amerika") || events[event].getName().contains("Америка имеет талант")) & !events[event].getName().contains("A-")){
                 if(events[event].getTc_in() == 0){

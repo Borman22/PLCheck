@@ -46,7 +46,10 @@ public class AllPrograms {
 	{"BeetParty", "Свеколки", "Dali MS-BeetParty"},
 	{"PR-Zhit-zdorovo", "Жить здорово", "Dali PR-Zhit zdorovo"},
         {"HS-SEX-MISTO", "Секс и город", "Dali HS-Sex i Misto"},
-        {"HS-Medium", "Dali HS-Medium"}
+        {"Медиум", "HS-Medium", "Dali HS-Medium"},
+        {"HS-CSI", "Dali HS-CSI"},
+        {"Морская полиция", "HS-NCIS", "Dali HS-NCIS"},
+        {"CriminalMinds", "Dali HS-CriminalMinds"}
 	//{"PR-Kroliki", ""}
         //{"Карамба", "Dali PR-Karamba"}  // Программу не нашел	    
     };    
@@ -57,7 +60,7 @@ public class AllPrograms {
     //Мультики, на которые надо ставить знак круг
     public static String[] multsName = {"Numo", "Ernie", "Elmo", "Graysya", "Grover", "Redyska", "Редиска", "BeetParty", "Свеколки", "MS-Bernard", "MS-Fixies-Aeroplan", "MS-Juki", "Жуки", "MS-Monk", "Монк"};
     //Программы, на которые нет склеротиков (для того, чтобы программа не ругалась, что склеротики не установлены)
-    public static String[] withoutDali = {"ambicioznie", "KrasivoJit", "MS-Fixies", "Фиксики", "кролики", "Kroliki", "PR-Women", "Женщины не прощают", "На чужих ошибках", "PR-Chyzhyeoshybki", "HS-CSI", "HS-NCIS", "Морская полиция", "PR-Istorii", "HF-"};
+    public static String[] withoutDali = {"ambicioznie", "KrasivoJit", "MS-Fixies", "Фиксики", "кролики", "Kroliki", "PR-Women", "Женщины не прощают", "На чужих ошибках", "PR-Chyzhyeoshybki", "PR-Istorii", "HF-"};
     
     public static String[] dynamicScleroticBudni =          {/*"MS-Fixies everyday 0730",     "PR-Moment-skalpelya today 1900",   */"PR-Bytva today 2000"   }; 
     public static String[] dynamicScleroticVihodnoj =       {/*"MS-Fixies everyday 0730",     "PR-Moment-skalpelya today 1900",   */"PR-Bytva today 2100"   };
