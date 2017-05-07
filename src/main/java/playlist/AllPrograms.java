@@ -5,16 +5,16 @@ public class AllPrograms {
     // Все программы, на которые есть склеротики
     public static String[][] progNameAndDali = {
 	{"Vtoraya", "Dali HS-Druge Jittya"},
-	{"Vacances", "Dali HS-Les Vacances de iAmour"},
+	//{"Vacances", "Dali HS-Les Vacances de iAmour"},
 	{"Mister", "Мистер Бин", "Dali HS-Mister Bin"},
 	{"Ogon", "Dali HS-Ogon Lyubvi"},
-	{"Diabola", "Dali HS-Santa Diabla"},
-	{"Numo", "Dali MS-321 Numo"},
-	{"Ernie", "Dali MS-Bert and Ernie"},
-	{"Elmo", "Dali MS-Elmo"},
-	{"Graysya", "Dali MS-Graysya"},
-	{"Grover", "Dali MS-Grover"},
-	{"Redyska", "Редиска", "Dali MS-Rediska"},
+	//{"Diabola", "Dali HS-Santa Diabla"},
+	//{"Numo", "Dali MS-321 Numo"},
+	//{"Ernie", "Dali MS-Bert and Ernie"},
+	//{"Elmo", "Dali MS-Elmo"},
+	//{"Graysya", "Dali MS-Graysya"},
+	//{"Grover", "Dali MS-Grover"},
+	//{"Redyska", "Редиска", "Dali MS-Rediska"},
 	{"3x4", "Зх4", "Dali PR-3x4"},
 	{"Amerika", "Америка имеет талант", "Dali PR-Amerika Mae Talant"},
 	{"Anatomiya", "Анатомия славы", "Dali PR-Anatomiya Slavy"},
@@ -41,17 +41,25 @@ public class AllPrograms {
 	//{"MS-Fixies", "Dali MS-Fixies"},
 	{"MS-Juki", "Жуки", "Dali MS-Juki"},
 	{"MS-Monk", "Монк", "Dali MS-Monk"},
-	{"PR-Moment-skalpelya", "Dali PR-Moment-skalpelya"}
-	//{"PR-Bytva", ""},   // Еще нет
+	{"PR-Moment-skalpelya", "Dali PR-Moment-skalpelya"},
+	{"PR-Bytva", "Dali PR-Bytva"}
 	//{"BeetParty", "Свеколки", ""},
 	//{"PR-Kroliki", ""}
         //{"Карамба", "Dali PR-Karamba"}  // Программу не нашел
     };    
     
     //Мультики, на которые надо ставить знак круг
-    public static String[] multsName = {"Numo", "Ernie", "Elmo", "Graysya", "Grover", "Redyska", "Редиска", "BeetParty", "Свеколки", "MS-Bernard", "MS-Fixies-Aeroplan", "MS-Juki", "Жуки", "MS-Monk"};
+    public static String[] multsName = {"Numo", "Ernie", "Elmo", "Graysya", "Grover", "Redyska", "Редиска", "BeetParty", "Свеколки", "MS-Bernard", "MS-Fixies-Aeroplan", "MS-Juki", "Жуки", "MS-Monk", "Монк"};
     //Программы, на которые нет склеротиков (для того, чтобы программа не ругалась, что склеротики не установлены)
-    public static String[] withoutDali = {"ambicioznie", "KrasivoJit", "BeetParty", "Свеколки", "PR-Bytva", "MS-Fixies", "Фиксики", "кролики", "Kroliki"};
+    public static String[] withoutDali = {"ambicioznie", "KrasivoJit", "BeetParty", "Свеколки", "PR-Bytva", "MS-Fixies", "Фиксики", "кролики", "Kroliki", "PR-Women", "На чужих ошибках", "PR-Chyzhyeoshybki", "HS-CSI"};
+    
+    public static String[] dynamicScleroticBudni =          {/*"MS-Fixies everyday 0730", */    "PR-Moment-skalpelya today 1900",   "PR-Bytva today 2000"   }; 
+    public static String[] dynamicScleroticVihodnoj =       {/*"MS-Fixies everyday 0730", */    "PR-Moment-skalpelya today 1900",   "PR-Bytva today 2100"   };
+    public static String[] dynamicScleroticDali =           {/*"Dali MS-Fixies", */             "Dali PR-Moment-skalpelya",         "Dali PR-Bytva"         };
+    public static int [] startOfDynamicScleroticBudni =     {/*810000, */                       810000,                             810000                  }; //9.00  9.00
+    public static int [] stopOfDynamicScleroticBudni =      {/*1710000, */                      1710000,                            1800000                 }; //19.00 20.00
+    public static int [] startOfDynamicScleroticVihodnoj =  {/*810000, */                       810000,                             810000                  }; //9.00  9.00
+    public static int [] stopOfDynamicScleroticVihodnoj =   {/*1710000, */                      1710000,                            1890000                 }; // 19.00 21.00
     
     
     
