@@ -110,7 +110,14 @@ public class TimeCode {
     
     /**
      * Метод отображает ТС в виде  23:59:59:24
+     * @return 
      */
+    
+    @Override
+    public String toString(){
+        return TCStr;
+    }    
+    
     void showTC(){
         System.out.println(TCStr);
     }
@@ -155,7 +162,7 @@ public class TimeCode {
     /**
      * Метод получает ТС в кадрах и приводит его к виду (int) 23595924
      */     
-    private int TCInFrameToIntStr(int i){
+    int TCInFrameToIntStr(int i){
         int hh, mm, ss, ff;
         hh = mm = ss = ff = 0;
         hh = i/90_000;
@@ -167,7 +174,7 @@ public class TimeCode {
         return 1_000_000 * hh + 10_000 * mm + 100 * ss + ff;
     }
     
-    private int TCIntStrToFrame(int i){
+    int TCIntStrToFrame(int i){
         int hh, mm, ss, ff;
          hh = i / 1_000_000;    // часы
         i = i - 1_000_000 * hh;
@@ -178,7 +185,7 @@ public class TimeCode {
         return 90_000 * hh + 1500 * mm + 25 * ss + ff;
     }
 
-    private int TCStrToIntStr(String s){
+    int TCStrToIntStr(String s){
         char [] array = s.toCharArray();
         char arrayTemp [] = new char[8];       
 
@@ -215,7 +222,7 @@ public class TimeCode {
             out += 2160000; // Переход через полночь
             trueFalseFlag = (in == (out - dur));
         }
-        System.out.println("IN = " + tc_in + ",  OUT = " + tc_out + ",  DUR = " + tc_dur + " is " + trueFalseFlag);
+    //    System.out.println("IN = " + tc_in + ",  OUT = " + tc_out + ",  DUR = " + tc_dur + " is " + trueFalseFlag);
         return trueFalseFlag;
     }
 }
