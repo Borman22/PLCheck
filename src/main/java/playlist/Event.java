@@ -1,5 +1,7 @@
 
 package playlist;
+import java.util.regex.Matcher;  
+import java.util.regex.Pattern;
 
 public class Event {
     public int NumberOfEvent;
@@ -13,11 +15,13 @@ public class Event {
     private String name;
     private String [] format;
     private String status;
+    private String canonicalName;
 
     Event(){
         this.NumberOfEvent = 0;
         this.date = " ";
         name = " ";
+        canonicalName = " ";
         status = " ";
     }
     
@@ -60,6 +64,7 @@ public class Event {
     }
     public void setName(String NAME){
         this.name = strContents(NAME, "<name>", "</name>");
+        this.canonicalName = nameToCanonical();
     }
     public void setFormats(String [] FORMATS){
         this.format = FORMATS;
@@ -101,25 +106,45 @@ public class Event {
     public String getStatus(String STATUS){
         return status;
     }
+    public String getCanonicalName(){
+        return canonicalName;
+    }    
     
     @Override
     public String toString(){
-        return NumberOfEvent + "   Time = " + time.toString() + "   IN = " + tc_in.toString() + "   OUT = " + tc_out.toString() + "   DUR = " + duration.toString() + "   ";
+        return NumberOfEvent + "   Time = " + time.toString() + "   IN = " + tc_in.toString() + "   OUT = " + tc_out.toString() + "   DUR = " + duration.toString() + "   " + name;
     }
     String strContents(String str, String teg_start, String teg_stop){
          return str.substring((str.indexOf(teg_start) + teg_start.length()), str.lastIndexOf(teg_stop));
     }
     
     public boolean isSameName(String canonicalNAME){
-        return name.startsWith(canonicalNAME);
+       // System.out.println(NumberOfEvent + "    name.startsWith(canonicalNAME) = " + name.startsWith(canonicalNAME) +"   canonicalName = " + canonicalName +  "   canonicalNAME_in = " + canonicalNAME);
+        return canonicalName.startsWith(canonicalNAME);
     }
     public boolean isSameTC_Out(int currentTCInFrame){
         int i = tc_out.getTCInFrame() - currentTCInFrame;
         i = (i > 0) ? i : -i;
         return (i < 25);
     }
-    public String getCanonicalName(){
-        String tempName = name; 
+    private String nameToCanonical(){
+        String tempName = name;
+        int tempIndexStart = 0;
+        while((tempIndexStart != tempName.length()) && (  Character.isDigit(tempName.charAt(tempIndexStart)) || (tempName.charAt(tempIndexStart) == '_'))  )
+            tempIndexStart++;        
+        
+        Pattern pattern;  
+        Matcher matcher; 
+        final String es = "(S\\d\\dE\\d\\d)";
+        pattern = Pattern.compile(es);
+        matcher = pattern.matcher(name); 
+
+        if(matcher.find()){
+            //System.out.println(NumberOfEvent + " " + matcher.end(0));//
+            return name.substring(tempIndexStart, matcher.end());
+        }
+        
+        
         int tempIndexEnd = name.indexOf(" сег.");
         int tempIndexVTR = name.indexOf("VTR");
             if(tempIndexEnd == -1)
@@ -127,14 +152,12 @@ public class Event {
             else if(!(tempIndexVTR == -1))
                 tempIndexEnd = (tempIndexEnd < tempIndexVTR) ? tempIndexEnd : tempIndexVTR;
 
-        int tempIndexStart = 0;
-        while((tempIndexStart != tempName.length()) && (  (Character.isDigit(tempName.charAt(tempIndexStart)) || (tempName.charAt(tempIndexStart) == '_'))  ) )
-            tempIndexStart++;
-        
+
         if((tempIndexStart != 0) | (tempIndexEnd != -1)){
             tempIndexEnd = (tempIndexEnd == -1) ? name.length() : tempIndexEnd;
             tempName = name.substring(tempIndexStart, tempIndexEnd);
         }
         return tempName;
     }
+
 }
