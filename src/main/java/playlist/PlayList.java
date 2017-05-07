@@ -2,6 +2,7 @@ package playlist;
 import java.util.Scanner;
 import java.io.File;
 import java.io.*;
+import java.util.Arrays;
 import javax.swing.JOptionPane;
 
 public class PlayList{
@@ -37,6 +38,43 @@ public class PlayList{
     static int number = 0;
     static int errDaliFormat = 0;
     static String canonicalName;
+    
+    public static String[][] progNameAndDali = {
+	{"Vtoraya", "Dali HS-Druge Jittya"},
+	{"Vacances", "Dali HS-Les Vacances de iAmour"},
+	{"Mister", "Мистер Бин", "Dali HS-Mister Bin"},
+	{"Ogon", "Dali HS-Ogon Lyubvi"},
+	{"Diabola", "Dali HS-Santa Diabla"},
+	{"Numo", "Dali MS-321 Numo"},
+	{"Ernie", "Dali MS-Bert and Ernie"},
+	{"Elmo", "Dali MS-Elmo"},
+	{"Graysya", "Dali MS-Graysya"},
+	{"Grover", "Dali MS-Grover"},
+	{"Redyska", "Редиска", "Dali MS-Rediska"},
+	{"3x4", "Зх4", "Dali PR-3x4"},
+	{"Amerika", "Dali PR-Amerika Mae Talant"},
+	{"Anatomiya", "Анатомия славы", "Dali PR-Anatomiya Slavy"},
+	{"Pozhenimsya", "Dali PR-Davay Pozhenimsya"},
+	{"Enyky", "Эники", "Dali PR-Enyky Benyky"},
+	{"GLUPERS", "Глуперсы", "Dali PR-Glupers"},
+	{"Hovanky", "семейные прятки", "Dali PR-Hovanky"},
+	{"ROZVODI", "Rozvodi", "Rozvody", "Крутые разводы", "Dali PR-Kruti Rozvodi"},
+	{"Lolita", "Dali PR-Lolita"},
+	{"More", "Море по колено", "MK_", "Dali PR-More po kolino"},
+	{"Jamies 15", "Jamies15", "Jamies_15", "Обед за 15 минут", "Dali PR-Oliver 15min"},
+	{"za 30 min", "Обед за 30 минут", "Jamies30M", "JO30MM", "Dali PR-Oliver 30min"},
+	{"Jamies_Big_Festival", "Dali PR-Oliver Festival"},
+	{"Jamies Great Britain", "Британская кухня", "Dali PR-Oliver Great Britain"},
+	{"Jamies_American_Road_Trip", "Кулинарные путешествия", "Dali PR-Oliver Mandrivki"},   // ?????????????????   Великий Кормчий Джейми 1 с. Великий Харчевой Джейми сег. 1-2
+	{"_Twist", "Рецепты Джейми", "Dali PR-Oliver Recepty"},
+	{"Paral", "Dali PR-Paralelniy Svit"},
+	{"Rozkishne", "Dali PR-Rozkishne zhittya"},
+	{"SimeyniPrystrasti", "Semeynye_strasti", "Dali PR-Simeyni Pristrasti"}, // 6???
+	{"Virus", "Dali PR-Virus Smihu"},
+	{"Vuso", "УсоЛапоХвост", "Dali PR-Vusolapohvist"},
+	{"groshi", "деньги", "Dali PR-Za groshi"}
+        //{"Карамба", "Dali PR-Karamba"}
+    };
     
     public static void main(String[] args)  throws FileNotFoundException, IOException  {
         openFile();
@@ -149,6 +187,7 @@ public class PlayList{
         StringBuffer buf;
         int tempInt;
         int subClip;
+	String formatDali;
         
         for(event = 1; event < totalEvents; event++ ){
             tempPGM = 0;
@@ -348,7 +387,7 @@ public class PlayList{
                     if(bufPrgName.equals(canonicalName)){ // имя совпадает
                         if( !(events[programs[numberOfPrg][numberOfSubclip]].isSameTC_Out( events[event].getTc_in() )) ){    // TC отличается - пишем ошибку
                             errTC++;
-                            errors[event][8] = "   IN/OUT/ClipName_ERROR   " + events[programs[numberOfPrg][numberOfSubclip]].getTc_out() + "   " + events[event].getTc_in();
+                            errors[event][8] = "   IN/OUT/ClipName_ERROR   "/* + events[programs[numberOfPrg][numberOfSubclip]].getTc_out() + "   " + events[event].getTc_in()*/;
                         }
                         numberOfSubclip++;
                         programs[numberOfPrg][numberOfSubclip] = event;
@@ -391,7 +430,7 @@ public class PlayList{
         
         
         
-        
+        //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         
         
         
@@ -399,17 +438,27 @@ public class PlayList{
         
         // проверяем все форматы программ
         for (int program = 1; program < totalPrograms+1; program++){
+        /*    //if(programs[program][0] != 0)
+            //    System.out.println("________________________________________Программа " + program + "________________________________________");
+            for(int j = 0; j < programs[program][9]; j++){
+                System.out.printf("%87s  %-60s", events[programs[program][j]].toString(), events[programs[program][j]].getName());
+                //System.out.println(programs[program][9]);
+		String [] tempFormat2 = events[programs[program][j]].getFormat();
+		
+		
+		for(String tempFormat21:tempFormat2){
+		    System.out.print("[" + tempFormat21 + "]" + "   ");
  
-         /*   if(programs[i][0] != 0)
-                System.out.println("________________________________________Программа " + i + "________________________________________");
-            for(int j = 0; j <= programs[i][9]; j++)
-                if(programs[i][j] != 0){
-                    System.out.print(events[programs[i][j]].toString() + "  ");
-                    System.out.println(programs[i][9]);
-                }
-            System.out.println("");
+		}
+		
+		System.out.println();
+            }
+	    System.out.printf("%100s-----------\n\n", formatDali);
+            System.out.println();
+	*/
+        //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
             
-            //text for Americas got talent off            */
+            //text for Americas got talent off            
             if(events[programs[program][0]].getName().contains("Amerika")){
                 for(subClip = 0; subClip < programs[program][9]; subClip++){  //перебераем все субклипы в этой программе
                     tempFormat = events[programs[program][subClip]].getFormat(); 
@@ -462,19 +511,30 @@ public class PlayList{
 		    }
                 }
                 if( (subClip == (programs[program][9] - 1)) && (tempDali != 1)){
-                    if(! ((events[programs[(program < totalPrograms) ? (program+1) : program][0]].getName().contains("ambicioznie")) || (events[programs[(program < totalPrograms) ? (program+1) : program][0]].getName().contains("KrasivoJit")))){  //не пишем ошибку, если следующий клип (если он есть) HS-Krasivie-i-ambicioznie, KrasivoJit
+                    if(! ((events[programs[(program < totalPrograms) ? (program+1) : program][0]].getName().contains("ambicioznie")) || (events[programs[(program < totalPrograms) ? (program+1) : program][0]].getName().contains("KrasivoJit")) || (events[programs[(program < totalPrograms) ? (program+1) : program][0]].getName().contains("BeetParty")))){  //не пишем ошибку, если следующий клип (если он есть) HS-Krasivie-i-ambicioznie, KrasivoJit
                         errors[programs[program][subClip]][7] = "   format_Dali_ERROR!"; // (ожидается format Dali)
                         errDaliFormat++;
                     }
                 } 
-
-                
-            }
-          /*  
-            
-                                System.out.println("tempDali = " + tempDali);
-
-            */
+            }   //for(subClip = 0; subClip < programs[program][9]; subClip++){ //перебераем все субклипы в этой программе
+	    
+	    if(program != 1){
+		formatDali = getDali(events[programs[program][0]].getName());
+		String [] tempFormat2 = events[programs[program-1][programs[program-1][9] - 1]].getFormat();
+	//System.out.println(Arrays.deepToString(tempFormat2) + "    " + formatDali + "      это программа  " + events[programs[program][0]].getName());
+		boolean sameFormat = false;
+		for(String tempFormat21:tempFormat2)
+		    if(tempFormat21.equals(formatDali))
+			sameFormat = true;
+		    if(!formatDali.equals("") && !sameFormat){
+			if(errors[programs[program - 1][programs[program-1][9] - 1]][7] != null){
+			    errors[programs[program - 1][programs[program-1][9] - 1]][7] = errors[programs[program - 1][programs[program-1][9] - 1]][7].concat("  must be   [ " + formatDali + " ]");
+			} else {
+			    errors[programs[program - 1][programs[program-1][9] - 1]][7] = "   format_Dali_ERROR!  must be  [ " + formatDali + " ]";
+			    errDaliFormat++;
+			}
+		    }
+	    }
         } //for (int i = 1; i < totalPrograms; i++){
     }  // static void checkFormats(Event[] events)
 
@@ -515,7 +575,15 @@ public class PlayList{
         System.out.println("Проверить вручную:");
         System.out.println("1. Знак круг");
         System.out.println("2. Знак треугольник");
-        System.out.println("3. Склеротики (названия программ)");
+        //System.out.println("3. Склеротики (названия программ)");
     }
+    
+    private static String getDali(String programName) {
+        for (String[] progNameAndDali1 : progNameAndDali) 
+            for (int j = 0; j < progNameAndDali1.length - 1; j++)
+                if (programName.contains(progNameAndDali1[j]))
+                    return progNameAndDali1[progNameAndDali1.length - 1];
+        return "";
+    }    
 }
 
