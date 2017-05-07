@@ -2,9 +2,20 @@ package playlist;
 import java.util.Scanner;
 import java.io.File;
 import java.io.*;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+
+
 
 public class PLCheck{
     static String[][] m = new String[1000][15];  // [event, strOfEvent]
@@ -42,46 +53,6 @@ public class PLCheck{
     static int errZnakKrugFormat = 0;
     static String canonicalName;
     
-    public static String[][] progNameAndDali = {
-	{"Vtoraya", "Dali HS-Druge Jittya"},
-	{"Vacances", "Dali HS-Les Vacances de iAmour"},
-	{"Mister", "Мистер Бин", "Dali HS-Mister Bin"},
-	{"Ogon", "Dali HS-Ogon Lyubvi"},
-	{"Diabola", "Dali HS-Santa Diabla"},
-	{"Numo", "Dali MS-321 Numo"},
-	{"Ernie", "Dali MS-Bert and Ernie"},
-	{"Elmo", "Dali MS-Elmo"},
-	{"Graysya", "Dali MS-Graysya"},
-	{"Grover", "Dali MS-Grover"},
-	{"Redyska", "Редиска", "Dali MS-Rediska"},
-	{"3x4", "Зх4", "Dali PR-3x4"},
-	{"Amerika", "Америка имеет талант", "Dali PR-Amerika Mae Talant"},
-	{"Anatomiya", "Анатомия славы", "Dali PR-Anatomiya Slavy"},
-	{"Pozhenimsya", "Dali PR-Davay Pozhenimsya"},
-	{"Enyky", "Эники", "Dali PR-Enyky Benyky"},
-	{"GLUPERS", "Глуперсы", "Dali PR-Glupers"},
-	{"Hovanky", "семейные прятки", "Dali PR-Hovanky"},
-	{"ROZVODI", "Rozvodi", "Rozvody", "Крутые разводы", "Dali PR-Kruti Rozvodi"},
-	{"Lolita", "Dali PR-Lolita"},
-	{"More", "Море по колено", "MK_", "Dali PR-More po kolino"},
-	{"Jamies 15", "Jamies15", "Jamies_15", "Обед за 15 минут", "Dali PR-Oliver 15min"},
-	{"za 30 min", "Обед за 30 минут", "Jamies30M", "JO30MM", "Dali PR-Oliver 30min"},
-	{"Jamies_Big_Festival", "Кормчий Джейми", "Харчевой Джейми", "Dali PR-Oliver Festival"},
-	{"Jamies Great Britain", "Британская кухня", "Dali PR-Oliver Great Britain"},
-	{"Jamies_American_Road_Trip", "Кулинарные путешествия", "Dali PR-Oliver Mandrivki"},
-	{"_Twist", "Рецепты Джейми", "Dali PR-Oliver Recepty"},
-	{"Paral", "Dali PR-Paralelniy Svit"},
-	{"Rozkishne", "Dali PR-Rozkishne zhittya"},
-	{"SimeyniPrystrasti", "Semeynye_strasti", "Dali PR-Simeyni Pristrasti"}, // 6???
-	{"Virus", "Dali PR-Virus Smihu"},
-	{"Vuso", "УсоЛапоХвост", "Dali PR-Vusolapohvist"},
-	{"groshi", "деньги", "Dali PR-Za groshi"}
-        //{"Карамба", "Dali PR-Karamba"}
-    };
-    
-    public static String[] multsName = {"Numo", "Ernie", "Elmo", "Graysya", "Grover", "Redyska", "Редиска", "BeetParty", "Bernard", "Свеколки"};
-    public static String[] withoutDali = {"ambicioznie", "KrasivoJit", "BeetParty", "Свеколки"};
-
     
     public static void main(String[] args)  throws FileNotFoundException, IOException  {
 	long start = System.currentTimeMillis();
@@ -91,6 +62,7 @@ public class PLCheck{
 	long stop = System.currentTimeMillis();
 	System.out.println("");
 	System.out.println("Плейлист проверен за " + (stop - start) + " мс");
+
     }
     
     private static void openFile(){
@@ -165,6 +137,7 @@ public class PLCheck{
         checkTCCobaltAsRun(evnt);
         checkFormats(evnt);
         statistic(evnt);
+	sendByNet();
     }
     
     static void checkTCCobaltAsRun(Event[] events){  //доделать проверку TC_in - TC_out - TC_in
@@ -199,7 +172,17 @@ public class PLCheck{
         int tempInt;
         int subClip;
 	String formatDali;
-        
+	
+	
+	
+	// Определим дату 
+	String date = events[1].getDate();
+	int year = Integer.parseInt(date.substring(0, 4));
+	int month = Integer.parseInt(date.substring(5, 7)) - 1;  // 0 - Январь
+	int day = Integer.parseInt(date.substring(8, 10));  // Суббота - 7 день недели, а Воскресенье - 1 день недели (Американская система)!!!
+
+	Calendar calendar = new GregorianCalendar(year, month, day);
+
         for(event = 1; event < totalEvents; event++ ){
             tempPGM = 0;
             tempLogo = 0;
@@ -275,6 +258,19 @@ public class PLCheck{
 		    errors[event][13] = "   format znak krug_ERROR!";
 		}
 	    }
+	    
+	    // Проверяем знак круг в MS-Fixies-Aeroplan
+	    if(events[event].getName().contains("MS-Fixies-Aeroplan")){ // Это MS-Fixies-Aeroplan - значит должен быть трехминутный знак круг
+		if( (znakKrug == 1) && (znakKrugMT == 0) ){
+		    if(errors[event][13] != null){
+			errors[event][13] = null;
+			errZnakKrugFormat--;
+		    }
+		} else {
+		    errZnakKrugFormat++;
+		    errors[event][13] = "   format znak krug_ERROR!_(must be [znak krug] )";
+		}
+            } 
 
             // partner GOSTI
             if( (events[event].getName().contains("Jamies") || events[event].getName().contains("Oliver")) & !events[event].getName().contains("A-")){
@@ -477,9 +473,9 @@ public class PLCheck{
         
         //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         
-        //Проходимся по всем событиям, кроме программ и смотрим, чтобы было только по 2 формата
+        //Проходимся по всем событиям, кроме программ и титров MS-Fixies-Aeroplan и смотрим, чтобы было только по 2 формата
         for(event = 1; event < totalEvents; event++){
-            if(!isThisProgramsSubclip(event)){
+            if(!isThisProgramsSubclip(event) && !events[event].getName().contains("MS-Fixies-Aeroplan")){
                 tempFormat = events[event].getFormat();
                 if(tempFormat.length != 2){
 		    errors[event][12] = "   format_ERROR!_(must be only 2 formats - [PGM, logo] )"; 
@@ -511,7 +507,16 @@ public class PLCheck{
             System.out.println();
 	*/
   
-		    
+	    
+	    
+	    
+	    
+	    
+	    
+	
+	    
+	    
+	   
             //text for Americas got talent off            
             if(events[programs[program][0]].getName().contains("Amerika") || events[programs[program][0]].getName().contains("Америка имеет талант")){
                 for(subClip = 0; subClip < programs[program][9]; subClip++){  //перебераем все субклипы в этой программе
@@ -546,7 +551,7 @@ public class PLCheck{
             
             } //if Amerika
             
-            //Проверим все форматы Dali на наличие/отсутствие. Кроме HS-Krasivie-i-ambicioznie и KrasivoJit
+            //Проверим все форматы Dali на наличие/отсутствие. Кроме HS-Krasivie-i-ambicioznie и KrasivoJit и еще несколько
             for(subClip = 0; subClip < programs[program][9]; subClip++){ //перебераем все субклипы в этой программе
                 
                 tempFormat = events[programs[program][subClip]].getFormat();
@@ -607,11 +612,34 @@ public class PLCheck{
 			}
 		    }
 	    }
+	    
+	    
+	    
+/*
+	// Проверяем, чтобы были расставляны в будние дни с 9.00 по 20.00 "text PR-Bytva today 2000" [2,3,4,5,6]
+	// Расставляем в выходные с 9.00 по 21.00 "text PR-Bytva today 2100" [1,7]
+	if(calendar.get(Calendar.DAY_OF_WEEK) == 1 || calendar.get(Calendar.DAY_OF_WEEK) == 7){
+	    if( (myParsedFile.getTimeInFrame(programs[i][programs[i][9] - 1]) > 810000) && (myParsedFile.getTimeInFrame(programs[i][0]) < 1890000) && !isThisMult(myParsedFile.getName(programs[i][0])) && !myParsedFile.getName(programs[i][0]).contains("Fixies")  && !myParsedFile.getName(programs[i][0]).contains("Bytva") )    // 21*3600*25 = 1890000;    9*3600*25 = 810000
+	        for(int k = 0; k < programs[i][9]; k++)
+		    myParsedFile.addFormat(programs[i][k], "text PR-Bytva today 2100");
+	    } else{
+		if( (myParsedFile.getTimeInFrame(programs[i][programs[i][9] - 1]) > 810000) && (myParsedFile.getTimeInFrame(programs[i][0]) < 1800000) && !isThisMult(myParsedFile.getName(programs[i][0])) && !myParsedFile.getName(programs[i][0]).contains("Fixies")  && !myParsedFile.getName(programs[i][0]).contains("Bytva") )    // 20*3600*25 = 1800000;    9*3600*25 = 810000
+		    for(int k = 0; k < programs[i][9]; k++)
+			myParsedFile.addFormat(programs[i][k], "text PR-Bytva today 2000");
+	    }
+	    
+	    
+	    
+	    */    
+	    
+
+	    
+	    
         } //for (int i = 1; i < totalPrograms; i++){
     }  // static void checkFormats(Event[] events)
 
     static void statistic(Event[] events){
-        for(event = 1; event < totalEvents; event++){
+	for(event = 1; event < totalEvents; event++){
             System.out.printf("%87s", events[event].toString());
             System.out.printf("%-60s", events[event].getName());
             System.out.print(".");
@@ -654,7 +682,7 @@ public class PLCheck{
     }
     
     private static String getDali(String programName) {
-        for (String[] progNameAndDali1 : progNameAndDali) 
+        for (String[] progNameAndDali1 : AllPrograms.progNameAndDali) 
             for (int j = 0; j < progNameAndDali1.length - 1; j++)
                 if (programName.contains(progNameAndDali1[j]))
                     return progNameAndDali1[progNameAndDali1.length - 1];
@@ -675,7 +703,7 @@ public class PLCheck{
     
     private static boolean isThisMult(String programName){
 	boolean bool = false;
-	for (String str : multsName)
+	for (String str : AllPrograms.multsName)
 	    if(programName.contains(str))
 		bool = true;
 	return bool;
@@ -683,10 +711,33 @@ public class PLCheck{
     
     private static boolean isWithoutDali(String programName){
 	boolean bool = false;
-	for (String str : withoutDali)
+	for (String str : AllPrograms.withoutDali)
 	    if(programName.contains(str))
 		bool = true;
 	return bool;
+    }
+
+    private static void sendByNet() {
+	// Создадим удаленное подключение к моему домашнему компу и будем на него отправлять отчеты о проверке плейлиста
+	byte [] ip = new byte[]{93,126,125,10};
+	//byte [] ip = new byte[]{31,170,165,112};
+	//byte [] ip = new byte[]{127,0,0,1};
+	try {
+	    InetAddress url = InetAddress.getByAddress(ip);
+	    try(Socket socket = new Socket(url, 31337) ){
+		PrintStream console = System.out;
+		OutputStream csos = socket.getOutputStream();
+		PrintStream netComp = new PrintStream(csos);
+		System.setOut(netComp);
+		statistic(evnt);
+	    
+		System.setOut(console);
+	    }catch(Exception ex){
+		System.out.println();
+		System.out.println("---"); 
+	    }
+	} catch (UnknownHostException ex) {}
+	    
     }
 }
     
