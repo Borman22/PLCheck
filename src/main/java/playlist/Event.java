@@ -2,7 +2,7 @@
 package playlist;
 
 public class Event {
-    public int eventType; //9-10 или 11 строк
+    public int NumberOfEvent;
     
     private String date;
     private TimeCode time = new TimeCode();
@@ -15,10 +15,14 @@ public class Event {
     private String status;
 
     Event(){
-        this.eventType = 11;
+        this.NumberOfEvent = 0;
         this.date = " ";
         name = " ";
         status = " ";
+    }
+    
+    public void setNumberOfEvent(int N){
+        this.NumberOfEvent = N;
     }
     
     public void setDate(String DATE){
@@ -67,6 +71,9 @@ public class Event {
     
     
     
+    public int getNumberOfEvent(){
+        return NumberOfEvent;
+    }
     public String getDate(String DATE){
         return date;
     }
@@ -97,10 +104,37 @@ public class Event {
     
     @Override
     public String toString(){
-        return "Time = " + time.toString() + "   IN = " + tc_in.toString() + "   OUT = " + tc_out.toString() + "   DUR = " + duration.toString() + "   ";
+        return NumberOfEvent + "   Time = " + time.toString() + "   IN = " + tc_in.toString() + "   OUT = " + tc_out.toString() + "   DUR = " + duration.toString() + "   ";
     }
     String strContents(String str, String teg_start, String teg_stop){
          return str.substring((str.indexOf(teg_start) + teg_start.length()), str.lastIndexOf(teg_stop));
     }
     
+    public boolean isSameName(String canonicalNAME){
+        return name.startsWith(canonicalNAME);
+    }
+    public boolean isSameTC_Out(int currentTCInFrame){
+        int i = tc_out.getTCInFrame() - currentTCInFrame;
+        i = (i > 0) ? i : -i;
+        return (i < 25);
+    }
+    public String getCanonicalName(){
+        String tempName = name; 
+        int tempIndexEnd = name.indexOf(" сег.");
+        int tempIndexVTR = name.indexOf("VTR");
+            if(tempIndexEnd == -1)
+                tempIndexEnd = tempIndexVTR;
+            else if(!(tempIndexVTR == -1))
+                tempIndexEnd = (tempIndexEnd < tempIndexVTR) ? tempIndexEnd : tempIndexVTR;
+
+        int tempIndexStart = 0;
+        while((tempIndexStart != tempName.length()) && (  (Character.isDigit(tempName.charAt(tempIndexStart)) || (tempName.charAt(tempIndexStart) == '_'))  ) )
+            tempIndexStart++;
+        
+        if((tempIndexStart != 0) | (tempIndexEnd != -1)){
+            tempIndexEnd = (tempIndexEnd == -1) ? name.length() : tempIndexEnd;
+            tempName = name.substring(tempIndexStart, tempIndexEnd);
+        }
+        return tempName;
+    }
 }
