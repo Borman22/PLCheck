@@ -51,6 +51,7 @@ public class PLCheck{
     static int number = 0;
     static int errDaliFormat = 0;
     static int errZnakKrugFormat = 0;
+    static int errZnakTriugolnikFormat = 0;
     static String canonicalName;
     
     
@@ -155,6 +156,7 @@ public class PLCheck{
         int tempPGM;
         int tempLogo;
 	int tempLogoBitva;
+	int tempLogoTraur;
         int tempPartnerGostiFirst; //partner GOSTI в первом субклипе - ошибка.
         int tempPartnerGostiNext;  // отсутствует partner GOSTI в последующих субклипах - ошибка.
         int tempPartner100movFirst;
@@ -188,6 +190,8 @@ public class PLCheck{
             tempPGM = 0;
             tempLogo = 0;
 	    tempLogoBitva = 0;
+	    tempLogoTraur = 0;
+	    
             tempPartnerGostiFirst = 0;
             tempPartnerGostiNext = 0;
             tempPartner100movFirst = 0;
@@ -203,11 +207,14 @@ public class PLCheck{
                 if(tempFormat[i].contains("PGM"))
                     tempPGM++;
 
-                if( tempFormat[i].contains("logo v2") || tempFormat[i].contains("logo Traur") )
+                if( tempFormat[i].contains("logo v2") || tempFormat[i].contains("logo Traur") || tempFormat[i].equals("logo NewYear"))
                     tempLogo++;
 		
-		if( tempFormat[i].contains("Logo for Bitva") )
+		if( tempFormat[i].contains("Logo for Bitva") || tempFormat[i].contains("logo NewYear Right") )
                     tempLogoBitva++;
+		
+		if(tempFormat[i].contains("logo Traur"))
+                    tempLogoTraur++;
             }
 	    
 	    
@@ -230,19 +237,18 @@ public class PLCheck{
             
             if( (tempLogo + tempLogoBitva) != 1 ){
                 errLogoFormat++;
-                errors[event][2] = "   Logo_ERROR! ";
+                errors[event][2] = "   Logo_ERROR!";
             }
             
-            if(events[event].getName().equals("T-Tonometr-01") && (tempLogoBitva != 1)){
-		errLogoFormat++;
-		if(errors[event][2] == null)
-		    errors[event][2] = "   Logo_ERROR! [Logo for Bitva]";
-		else errors[event][2] = errors[event][2] + " [Logo for Bitva]";
-	    }
-	    
-	    
-	    
-	            //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            if(events[event].getName().contains("T-Tonometr"))
+		if(!((tempLogoTraur == 0 && tempLogoBitva != 0) || (tempLogoTraur != 0 && tempLogoBitva == 0))){
+		    errLogoFormat++;
+		    if(errors[event][2] == null)
+			errors[event][2] = "   Logo_ERROR! [Logo for Bitva]";
+		    else errors[event][2] = errors[event][2] + " [Logo for Bitva]";
+		}
+
+	    //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
             // Проверяем знак круг
 	    boolean thisIsMult = isThisMult(events[event].getName());
             int znakKrug = 0;
@@ -285,10 +291,28 @@ public class PLCheck{
 		    errors[event][13] = "   format znak krug_ERROR!_(must be [znak krug] )";
 		}
             } 
+	    
+	    // Проверяем znak triugolnik на сериалах (HS-...)
+	    int znakTriugolnik = 0;
+	    for (String tempFormat1 : tempFormat)  //перебираем форматы в текущем субклипе - programs[program][subClip]
+		if (tempFormat1.equals("znak triugolnik")) 
+		    znakTriugolnik++;
+	    if(events[event].getName().contains("HS-")){  // Это сериал
+		if(znakTriugolnik != 1){
+			errZnakTriugolnikFormat++;
+			errors[event][14] = "   format znak triugolnik_ERROR!";
+		} 
+	    } else { // это не сереал
+		if(znakTriugolnik != 0){
+		    errZnakTriugolnikFormat++;
+		    errors[event][14] = "   format znak triugolnik_ERROR!";
+		}
+	    }
+                       
 
             // partner GOSTI
             if( (events[event].getName().contains("Jamies") || events[event].getName().contains("Oliver")) & !events[event].getName().contains("A-")){
-                if(! (events[event].getName().contains("Christmas") || events[event].getName().contains("Great") || events[event].getName().contains("Trip") || events[event].getName().contains("Big")) ){
+//                if(! (events[event].getName().contains("Christmas") || events[event].getName().contains("Great") || events[event].getName().contains("Trip") || events[event].getName().contains("Big")) ){
                     if(events[event].getTc_in() == 0){  // первый клип
                         if(!events[event+1].getName().equals("SP-GOSTI")){
                             errSPGostiParnerMpg++;
@@ -334,16 +358,17 @@ public class PLCheck{
                             }                       // НЕ следующий субклип
                         }
                     }           // </не первый клип>
-                } else {            //не 15 минут, не рецепты и не 30 минут
-                    if(events[event].getName().contains("Jamies"))
-                        for (String tempFormat1 : tempFormat)
-                            if (tempFormat1.contains("partner GOSTI")) 
-                                tempPartnerGostiFirst++;  // Ошибка. В первом субклипе не должно быть partner GOSTI
-                    if(tempPartnerGostiFirst > 0){
-                        errors[event][4] = "   format_GOSTI_ERROR";
-                        errGOSTIFormat++;
-                    }
-                }
+//                } 
+//		else {            //не 15 минут, не рецепты и не 30 минут
+//                    if(events[event].getName().contains("Jamies"))
+//                        for (String tempFormat1 : tempFormat)
+//                            if (tempFormat1.contains("partner GOSTI")) 
+//                                tempPartnerGostiFirst++;  // Ошибка. В первом субклипе не должно быть partner GOSTI
+//                    if(tempPartnerGostiFirst > 0){
+//                        errors[event][4] = "   format_GOSTI_ERROR";
+//                        errGOSTIFormat++;
+//                    }
+//                }
                 
             } // partner GOSTI !(Jamies 15" || "Oliver")
 
@@ -424,14 +449,14 @@ public class PLCheck{
                     errAnonsDate++;
                 }
                 
-                // Сделать, чтобы программы, которые в анонсе соответствовали программам, которые в эфире
+                // TODO Сделать, чтобы программы, которые в анонсе соответствовали программам, которые в эфире
                 for(String element: tempAnons){
                     
                 }
             }
 
             // Создаем массив всех программ programs[номер программы][номер субклипа]
-            if((events[event].getDuration() > 1500) && !(events[event].getName().contains("Slalom") || events[event].getName().contains("SLALOM") || events[event].getName().contains("T-Tonometr-01"))){   // файл > 1 мин
+            if((events[event].getDuration() > 1500) && !(events[event].getName().contains("Slalom") || events[event].getName().contains("SLALOM") || events[event].getName().contains("T-Tonometr"))){   // файл > 1 мин
                 if(events[event].getTc_in() == 0){    // начинается с 00:00?
                     programs[numberOfPrg][9] = numberOfSubclip + 1;  //записываем сколько субклипов в предыдущей программе
                     numberOfSubclip = 0;
@@ -496,13 +521,56 @@ public class PLCheck{
         
         //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         
-        //Проходимся по всем событиям, кроме программ и титров MS-Fixies-Aeroplan и смотрим, чтобы было только по 2 формата
+        //Проходимся по всем событиям, кроме программ титров MS-Fixies-Aeroplan и тонометра и смотрим, чтобы было только по 2 формата, или 2-3, когда траур (+свеча)
         for(event = 1; event < totalEvents; event++){
-            if(!isThisProgramsSubclip(event) && !events[event].getName().contains("MS-Fixies-Aeroplan")){
+            if(!isThisProgramsSubclip(event) && !(events[event].getName().contains("MS-Fixies-Aeroplan") || events[event].getName().contains("T-Tonometr"))){
                 tempFormat = events[event].getFormat();
-                if(tempFormat.length != 2){
-		    errors[event][12] = "   format_ERROR!_(must be only 2 formats - [PGM, logo] )"; 
-		    errFormat++;
+		// Если это траурный день, то может быть по 3 формата (3 - свеча)
+		int tempLogoTraur2 = 0;
+		int tempLogoSvecha = 0;
+		for (String str:tempFormat){
+		    if(str.contains("logo Traur"))
+			tempLogoTraur2++;
+		    if(str.contains("Svecha"))
+			tempLogoSvecha++;
+		}
+		if(tempLogoTraur2 == 0)
+		    if(tempFormat.length != 2){
+			errors[event][12] = "   format_ERROR!_(must be 2 formats - [PGM, logo] )"; 
+			errFormat++;
+		    }
+		else { // Это траурный день
+		    if(tempLogoSvecha != 0)
+			if(tempFormat.length != 2){
+			    errors[event][12] = "   format_ERROR!_(must be 2 formats - [PGM, logo Traur] )"; 
+			    errFormat++;
+			}
+		    else if(tempFormat.length != 3){
+			    errors[event][12] = "   format_ERROR!_(must be 3 formats - [PGM, logo Traur, Svecha] )"; 
+			    errFormat++;
+		    }
+		}
+	    } else { // Проходимся по тонометрам и проверяем, стоит ли на них склеротик
+		String tonometrsDaliFormat = "";
+		String programmsDaliFormat = "";
+		if(events[event].getName().contains("T-Tonometr")){
+		    for(String str:events[event].getFormat()){
+			if(str.startsWith("Dali")){
+			    tonometrsDaliFormat = str;
+			System.out.println(tonometrsDaliFormat + " Тонометр");}
+		    }
+		    for(int j = 0; j < totalPrograms; j++){
+			if(programs[j][0] > event){
+			    programmsDaliFormat = getDali(events[programs[j][0]].getName());
+			    // Сравниваем формат с Dali и если он совпадает - выходим, а если нет - пишем ошибку
+			    System.out.println(programmsDaliFormat + " программа");
+			    if(!programmsDaliFormat.equals(tonometrsDaliFormat)){
+				errors[events[event].getNumberOfEvent()][7] = "   format_Dali_ERROR!"; // (ожидается format Dali)
+				errDaliFormat++;
+			    }
+			    break;
+			}   
+		    }  
 		}
 	    }
 	}
@@ -626,7 +694,7 @@ public class PLCheck{
 		    if(tempFormat21.equals(formatDali))
 			sameFormat = true;
 		if(events[programs[program-1][programs[program-1][9] - 1]].getDuration() > 3375)
-		    if(!formatDali.equals("") && !sameFormat){
+		    if(!formatDali.equals("") && !sameFormat){     // !!!!!!!!! !formatDali.equals("Dali PR-Bytva")
 			if(errors[programs[program - 1][programs[program-1][9] - 1]][7] != null){
 			    errors[programs[program - 1][programs[program-1][9] - 1]][7] = errors[programs[program - 1][programs[program-1][9] - 1]][7].concat("  must be   [ " + formatDali + " ]");
 			} else {
@@ -675,7 +743,7 @@ public class PLCheck{
         
 
         System.out.println("");
-        System.out.println("                                ВСЕГО ОШИБОК: " + (errDUR + errTC + errPGMFormat + errLogoFormat + errGOSTIFormat + err100movFormat + errTextAmerikaON + errTextAmerikaOFF + errSP100movParnerMpg + errSPGostiParnerMpg + errDaliFormat + errAnonsDate + errAnonsTime + errAnonsProgram + errFormat + errZnakKrugFormat));
+        System.out.println("                                ВСЕГО ОШИБОК: " + (errDUR + errTC + errPGMFormat + errLogoFormat + errGOSTIFormat + err100movFormat + errTextAmerikaON + errTextAmerikaOFF + errSP100movParnerMpg + errSPGostiParnerMpg + errDaliFormat + errAnonsDate + errAnonsTime + errAnonsProgram + errFormat + errZnakKrugFormat + errZnakTriugolnikFormat));
         
         System.out.println("");
         if(errDUR != 0) System.out.println("Ошибок в Duration: " + errDUR);
@@ -691,6 +759,8 @@ public class PLCheck{
         if(errDaliFormat != 0) System.out.println("Ошибок в format  Dali... : " + errDaliFormat);
 	if(errFormat != 0) System.out.println("Ошибок в format: " + errFormat);
 	if(errZnakKrugFormat != 0) System.out.println("Ошибок в format znak krug: " + errZnakKrugFormat);
+	if(errZnakTriugolnikFormat != 0) System.out.println("Ошибок в format znak triugolnik: " + errZnakTriugolnikFormat);
+	
 	 
         
         if(errAnonsDate != 0) System.out.println("Ошибок в дате анонса: " + errAnonsDate);
@@ -700,8 +770,6 @@ public class PLCheck{
         System.out.println("");
         System.out.println("Проверить вручную:");
         System.out.println("1. Знак квадрат");
-        System.out.println("2. Знак треугольник");
-        
     }
     
     private static String getDali(String programName) {

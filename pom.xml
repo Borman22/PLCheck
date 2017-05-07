@@ -6,7 +6,7 @@
 
     <groupId>playlist</groupId>
     <artifactId>PlayList</artifactId>
-    <version>3.15</version>
+    <version>3.17</version>
 
 
     <build>
