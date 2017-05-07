@@ -162,7 +162,7 @@ public class TimeCode {
      * Метод получает ТС в кадрах и приводит его к виду (int) 23595924
      */     
 
-    int TCInFrameToIntStr(int i){
+    static int TCInFrameToIntStr(int i){
         int hh, mm, ss, ff;
         hh = mm = ss = ff = 0;
         hh = i/90_000;
@@ -174,7 +174,33 @@ public class TimeCode {
         return 1_000_000 * hh + 10_000 * mm + 100 * ss + ff;
     }
     
-    int TCIntStrToFrame(int i){
+    static int TCStrToFrame(String s){
+        char [] array = s.toCharArray();
+        char arrayTemp [] = new char[8];
+        
+
+        if(s.length() != 11){
+            System.out.println("Таймкод должен быть в формате HH:MM:SS:FF. TC = 00:00:00:00.");
+            return 0;
+        }
+        
+        if((array[2] & array[5] & array[8]) != ':'){
+            System.out.println("Таймкод должен быть в формате HH:MM:SS:FF. TC = 00:00:00:00.");
+            return 0;
+        }
+
+        for(int i = 0, j = 0; i<11; i++){
+            if(array[i] >= '0' & array[i] <= '9'){
+                arrayTemp[j++] = array[i];
+            } else if(i == 2 | i == 5 | i==8){
+              //  continue;
+            } else {
+                System.out.println("Таймкод должен быть в формате HH:MM:SS:FF. TC = 00:00:00:00.");
+                return 0;
+            } 
+        }
+        int i = Integer.parseInt(new String(arrayTemp));
+        
         int hh, mm, ss, ff;
          hh = i / 1_000_000;    // часы
         i = i - 1_000_000 * hh;
@@ -185,7 +211,18 @@ public class TimeCode {
         return 90_000 * hh + 1500 * mm + 25 * ss + ff;
     }
     
-    int TCStrToIntStr(String s){
+    static int TCIntStrToFrame(int i){
+        int hh, mm, ss, ff;
+         hh = i / 1_000_000;    // часы
+        i = i - 1_000_000 * hh;
+         mm = i / 10_000;  // минуты
+        i = i - 10_000 * mm;
+         ss = i / 100;    // секунды
+         ff = i - 100 * ss; // кадры  
+        return 90_000 * hh + 1500 * mm + 25 * ss + ff;
+    }
+    
+    static int TCStrToIntStr(String s){
         char [] array = s.toCharArray();
         char arrayTemp [] = new char[8];       
 

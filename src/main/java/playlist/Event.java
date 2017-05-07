@@ -79,7 +79,7 @@ public class Event {
     public int getNumberOfEvent(){
         return NumberOfEvent;
     }
-    public String getDate(String DATE){
+    public String getDate(){
         return date;
     }
     public int getTime(){
@@ -103,7 +103,7 @@ public class Event {
     public String [] getFormat(){
         return format;
     }
-    public String getStatus(String STATUS){
+    public String getStatus(){
         return status;
     }
     public String getCanonicalName(){
@@ -112,7 +112,7 @@ public class Event {
     
     @Override
     public String toString(){
-        return NumberOfEvent + "   Time = " + time.toString() + "   IN = " + tc_in.toString() + "   OUT = " + tc_out.toString() + "   DUR = " + duration.toString() + "   " + name;
+        return NumberOfEvent + "   Time = " + time.toString() + "   IN = " + tc_in.toString() + "   OUT = " + tc_out.toString() + "   DUR = " + duration.toString() + "   ";
     }
     String strContents(String str, String teg_start, String teg_stop){
          return str.substring((str.indexOf(teg_start) + teg_start.length()), str.lastIndexOf(teg_stop));
@@ -141,6 +141,7 @@ public class Event {
 
         if(matcher.find()){
             //System.out.println(NumberOfEvent + " " + matcher.end(0));//
+            
             return name.substring(tempIndexStart, matcher.end());
         }
         

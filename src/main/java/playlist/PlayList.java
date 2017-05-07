@@ -31,7 +31,11 @@ public class PlayList{
     static int errDUR = 0;
     static int errSP100movParnerMpg = 0;
     static int errSPGostiParnerMpg = 0;
+    static int errAnonsDate = 0;
+    static int errAnonsTime = 0;
+    static int errAnonsProgram = 0;
     static int number = 0;
+    static int errDaliFormat = 0;
     static String canonicalName;
     
     public static void main(String[] args)  throws FileNotFoundException, IOException  {
@@ -43,7 +47,7 @@ public class PlayList{
     private static void openFile(){
             try{
                 scn = new Scanner((new File("d://Borman//1")), "UTF-8");
-            } catch(Exception e){JOptionPane.showMessageDialog(null, "Файл не найден");}
+            } catch(Exception e){JOptionPane.showMessageDialog(null, "              Чё нада?!", "Опа!", JOptionPane.ERROR_MESSAGE);}  // "Файл не найден"
         } 
   
     private static void readFile(){
@@ -83,12 +87,12 @@ public class PlayList{
                 else 
                     TCOutTemp = "06:00:00:00";
 
-                int tempTC_in = TCStrToFrame(evnt[i].strContents(m[i][2], "<time>", "</time>"));
-                int tempTC_out = TCStrToFrame(TCOutTemp);
+                int tempTC_in = TimeCode.TCStrToFrame(evnt[i].strContents(m[i][2], "<time>", "</time>"));
+                int tempTC_out = TimeCode.TCStrToFrame(TCOutTemp);
                         
                 if(tempTC_out < tempTC_in)
                     tempTC_out += 2160000;
-                evnt[i].setTc_out(TCInFrameToIntStr(tempTC_out - tempTC_in));
+                evnt[i].setTc_out(TimeCode.TCInFrameToIntStr(tempTC_out - tempTC_in));
 
                 evnt[i].setAsset_id(m[i][4]);
                 evnt[i].setName(m[i][5]);
@@ -107,52 +111,6 @@ public class PlayList{
         }
     }
 
-    static int TCStrToFrame(String s){
-        char [] array = s.toCharArray();
-        char arrayTemp [] = new char[8];       
-
-        if(s.length() != 11){
-            System.out.println("Таймкод должен быть в формате HH:MM:SS:FF. TC = 00:00:00:00.");
-            return 0;
-        }
-        
-        if((array[2] & array[5] & array[8]) != ':'){
-            System.out.println("Таймкод должен быть в формате HH:MM:SS:FF. TC = 00:00:00:00.");
-            return 0;
-        }
-
-        for(int i = 0, j = 0; i<11; i++){
-            if(array[i] >= '0' & array[i] <= '9'){
-                arrayTemp[j++] = array[i];
-            } else if(i == 2 | i == 5 | i==8){
-              //  continue;
-            } else {
-                System.out.println("Таймкод должен быть в формате HH:MM:SS:FF. TC = 00:00:00:00.");
-                return 0;
-            } 
-        }
-        int i = Integer.parseInt(new String(arrayTemp));
-        
-        int hh, mm, ss, ff;
-         hh = i / 1_000_000;    // часы
-        i = i - 1_000_000 * hh;
-         mm = i / 10_000;  // минуты
-        i = i - 10_000 * mm;
-         ss = i / 100;    // секунды
-         ff = i - 100 * ss; // кадры  
-        return 90_000 * hh + 1500 * mm + 25 * ss + ff;
-    }
-    static int TCInFrameToIntStr(int i){
-        int hh, mm, ss, ff;
-        hh = mm = ss = ff = 0;
-        hh = i/90_000;
-        i = i - 90_000 * hh;
-        mm = i/1500;
-        i = i - 1500 * mm;
-        ss = i/25;
-        ff = i - 25 * ss;
-        return 1_000_000 * hh + 10_000 * mm + 100 * ss + ff;
-    }
      
     static void checkPlayListFileCobaltAsRun(){ 
         checkTCCobaltAsRun(evnt);
@@ -164,11 +122,10 @@ public class PlayList{
         for(event = 1; event < totalEvents; event++){
             if(events[event].getDuration() != (events[event].getTc_out() - events[event].getTc_in())){
                 errDUR++;
-                errors[event][0] = "   DUR_ERROR!";
+		int intStrTC = TimeCode.TCInFrameToIntStr(events[event].getTc_out() - events[event].getTc_in());
+		TimeCode tempTC = new TimeCode(intStrTC);
+                errors[event][0] = "   DUR_ERROR!(" + tempTC.toString() + ")";
             }
-               // errors[event][1] = "IN/OUT_SUBCLIP_ERROR";
-               //     System.out.println(Arrays.deepToString(events[event].getFormat()));
-               // System.out.println("");
         }
     }    
 
@@ -181,11 +138,17 @@ public class PlayList{
         int tempPartner100movNext;
         int tempAmericasGotTalentON;
         int tempAmericasGotTalentOFF;
+        int tempDali;
         boolean thisIsNextSubclip;
         String bufPrgName = "qqq";
         int numberOfPrg = 0;
         int numberOfSubclip = 0;
         String [] tempFormat;
+        String [] tempAnons;
+        TimeCode tempTC = new TimeCode();
+        StringBuffer buf;
+        int tempInt;
+        int subClip;
         
         for(event = 1; event < totalEvents; event++ ){
             tempPGM = 0;
@@ -194,8 +157,6 @@ public class PlayList{
             tempPartnerGostiNext = 0;
             tempPartner100movFirst = 0;
             tempPartner100movNext = 0;
-            tempAmericasGotTalentON = 0;
-            tempAmericasGotTalentOFF = 0;
             thisIsNextSubclip = false;
    
             
@@ -216,6 +177,8 @@ public class PlayList{
                 i = (i > 0) ? i : -i;
                 thisIsNextSubclip = ((i < 25) & events[event-1].isSameName(canonicalName));
             }
+            
+            //System.out.println(event + " " + events[event].getName() + "   =    " + canonicalName);
             
             if(tempPGM != 1){
                 errPGMFormat++;
@@ -287,6 +250,7 @@ public class PlayList{
                         errGOSTIFormat++;
                     }
                 }
+                
             } // partner GOSTI !(Jamies 15" || "Oliver")
 
             // partner 100mov
@@ -337,13 +301,45 @@ public class PlayList{
                         }  // НЕ следующий субклип
                     }
                 } // </не первый клип>
+                
             }  // partner 100mov if()                        
 
+            
+            
+            
+            
+            
+            //Anons errors
+            if( (events[event].getDuration() < 500) && (events[event].getName().startsWith("A-"))){ // это анонс  
+                buf = new StringBuffer();
+                tempAnons = events[event].getName().split("-");
+                tempTC.setTC((buf.append(tempAnons[1]).append(':').append(tempAnons[2]).append(":00:00").toString())  );
+                tempInt = tempTC.getTCInFrame() - events[event].getTime();
+                tempInt = (tempInt > 0) ? tempInt : -tempInt;
+                //System.out.println("tempTC.getTCInFrame() = " + tempTC.getTCInFrame() + "    events[event].getTc_in() = " + events[event].getTime());
+                //System.out.println("tempTC = " + tempTC.toString() + "   events[event] = " + events[event].toString() + "   " + tempInt);
+                if(tempInt > 7500){
+                    errors[event][10] = "   AnonsTime_ERROR!";
+                    errAnonsTime++;	
+                }
+                
+                buf = new StringBuffer();
+                buf.append(tempAnons[4]).append('-').append(tempAnons[3]).toString();
+                if(!(events[event].getDate().contains(buf))){
+                    errors[event][10] = "   AnonsDate_ERROR!";
+                    errAnonsDate++;
+                }
+                
+                // Сделать, чтобы программы, которые в анонсе соответствовали программам, которые в эфире
+                for(String element: tempAnons){
+                    
+                }
+            }
 
-            // Создаем массив всех программ [номер программы][номер субклипа]
+            // Создаем массив всех программ programs[номер программы][номер субклипа]
             if((events[event].getDuration() > 1500) && !(events[event].getName().contains("Slalom"))){   // файл > 1 мин
                 if(events[event].getTc_in() == 0){    // начинается с 00:00?
-                    programs[numberOfPrg][9] = numberOfSubclip + 1;  //записываем сколько субклипов в одной программе
+                    programs[numberOfPrg][9] = numberOfSubclip + 1;  //записываем сколько субклипов в предыдущей программе
                     numberOfSubclip = 0;
                     numberOfPrg++;
                     programs[numberOfPrg][numberOfSubclip] = event;
@@ -352,13 +348,13 @@ public class PlayList{
                     if(bufPrgName.equals(canonicalName)){ // имя совпадает
                         if( !(events[programs[numberOfPrg][numberOfSubclip]].isSameTC_Out( events[event].getTc_in() )) ){    // TC отличается - пишем ошибку
                             errTC++;
-                            errors[event][8] = "   IN/OUT/ClipName_ERROR1   " + events[programs[numberOfPrg][numberOfSubclip]].getTc_out() + "   " + events[event].getTc_in();
+                            errors[event][8] = "   IN/OUT/ClipName_ERROR   " + events[programs[numberOfPrg][numberOfSubclip]].getTc_out() + "   " + events[event].getTc_in();
                         }
                         numberOfSubclip++;
                         programs[numberOfPrg][numberOfSubclip] = event;
                     } else {    // имя не совпадает - ищем, чтобы таймокд совпадал
                         boolean find = false;
-                        programs[numberOfPrg][9] = numberOfSubclip + 1;  //записываем сколько субклипов в одной программе
+                        programs[numberOfPrg][9] = numberOfSubclip + 1;  //записываем сколько субклипов в предыдущей программе
                         numberOfPrg++;
                         numberOfSubclip = 1;
                         programs[numberOfPrg][numberOfSubclip] = event;
@@ -368,33 +364,41 @@ public class PlayList{
                                 //System.out.println(tempEvent + "  это до сравнения bufPrgName = [" + bufPrgName + "]   " + events[tempEvent].getName() + "  events[tempEvent].isSameName(bufPrgName)" + events[tempEvent].isSameName(bufPrgName) + "  tc " + events[tempEvent].isSameTC_Out(events[event].getTc_in()));
                                 if((events[tempEvent].isSameTC_Out(events[event].getTc_in())) && events[tempEvent].isSameName(bufPrgName)){  //нашли
                                     programs[numberOfPrg][0] = tempEvent;
-                                  //  System.out.println("записали в 0");
                                     find = true;
-                                   // System.out.println(tempEvent + " после сравнения bufPrgName = " + bufPrgName + "   " + events[tempEvent].getName() + "  find = " + find);
                                     break;
                                 }
                             }    
                             if(!find){
-                                //System.out.println(" после сравнения, если find = " + find);
                                 programs[numberOfPrg][0] = event;
                                 errTC++;
-                                errors[event][8] = "   IN/OUT/ClipName_ERROR2";
+                                errors[event][8] = "   IN/OUT/ClipName_ERROR";
+				//System.out.println("Количество субклипов = " + programs[numberOfPrg - 1][9]);
                             }   
                            
                         } else {    //это первая найденная программа
                             programs[numberOfPrg][0] = event;
                             errTC++;
-                            errors[event][8] = "   IN/OUT/ClipName_ERROR3";
+                            errors[event][8] = "   IN/OUT/ClipName_ERROR";
                         }
                     } //имя не совпадает
                 }   //файл начинается не с 00:00
             }// файл < 1 мин
         } //for(event = 1; event < totalEvents; event++ )
         totalPrograms = numberOfPrg;
-        programs[numberOfPrg][9] = numberOfSubclip + 1;  //записываем сколько субклипов в одной программе - последняя программа
+        programs[numberOfPrg][9] = numberOfSubclip + 1;  //записываем сколько субклипов в последней программе
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         // проверяем все форматы программ
-        for (int program = 1; program < totalPrograms; program++){
+        for (int program = 1; program < totalPrograms+1; program++){
  
          /*   if(programs[i][0] != 0)
                 System.out.println("________________________________________Программа " + i + "________________________________________");
@@ -405,14 +409,15 @@ public class PlayList{
                 }
             System.out.println("");
             
-            
             //text for Americas got talent off            */
             if(events[programs[program][0]].getName().contains("Amerika")){
-                for(int subClip = 0; subClip < programs[program][9]; subClip++){  //перебераем все субклипы в этой программе
+                for(subClip = 0; subClip < programs[program][9]; subClip++){  //перебераем все субклипы в этой программе
                     tempFormat = events[programs[program][subClip]].getFormat(); 
                     tempAmericasGotTalentON = 0;
                     tempAmericasGotTalentOFF = 0;
-                    for (String tempFormat1 : tempFormat){
+                    
+                    
+                    for (String tempFormat1 : tempFormat){  //перебираем форматы в текущем субклипе - programs[program][subClip]
                         if (tempFormat1.equals("text for Americas got talent")) 
                             tempAmericasGotTalentON++;
                         if ( tempFormat1.equals("text for Americas got talent off") )
@@ -433,48 +438,62 @@ public class PlayList{
                             errTextAmerikaOFF++;
                         } 
                     }
- 
-                    
+
                 } //for...  - перебераем все субклипы в этой программе
             
             } //if Amerika
             
-            
+            //Проверим все форматы Dali на наличие/отсутствие. Кроме HS-Krasivie-i-ambicioznie и KrasivoJit
+            for(subClip = 0; subClip < programs[program][9]; subClip++){ //перебераем все субклипы в этой программе
+                
+                tempFormat = events[programs[program][subClip]].getFormat();
+                tempDali = 0;
+                for (String tempFormat1 : tempFormat){  //перебираем форматы в текущем субклипе - programs[program][subClip]
+                    if ( tempFormat1.startsWith("Dali") )
+                        tempDali++;
+                }
+                   // System.out.println("[" + program + "][" + subClip + "]  Dali = " + tempDali + " " + tempFormat1 + "              subClip = " + subClip + "  (programs[program][9] - 1) =" + (programs[program][9] - 1) );
+                if( (subClip != (programs[program][9] - 1)) && (tempDali != 0)){
+		    errors[programs[program][subClip]][7] = "   format_Dali_ERROR!"; // (не должно быть Dali)
+		    errDaliFormat++;
+		    if((subClip == 0) && (programs[program][0] == programs[program][1]) && errors[programs[program][subClip]][7].equals("   format_Dali_ERROR!")){
+			errors[programs[program][subClip]][7] = null; // (На Dali не обращаем внимание)
+			errDaliFormat--;
+		    }
+                }
+                if( (subClip == (programs[program][9] - 1)) && (tempDali != 1)){
+                    if(! ((events[programs[(program < totalPrograms) ? (program+1) : program][0]].getName().contains("ambicioznie")) || (events[programs[(program < totalPrograms) ? (program+1) : program][0]].getName().contains("KrasivoJit")))){  //не пишем ошибку, если следующий клип (если он есть) HS-Krasivie-i-ambicioznie, KrasivoJit
+                        errors[programs[program][subClip]][7] = "   format_Dali_ERROR!"; // (ожидается format Dali)
+                        errDaliFormat++;
+                    }
+                } 
+
+                
+            }
           /*  
-  
             
-            
+                                System.out.println("tempDali = " + tempDali);
+
             */
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
         } //for (int i = 1; i < totalPrograms; i++){
-    
-        
     }  // static void checkFormats(Event[] events)
                 
      
     static void statistic(Event[] events){
         for(event = 1; event < totalEvents; event++){
-            System.out.print(events[event].toString());
+            System.out.printf("%87s", events[event].toString());
+            System.out.printf("%-60s", events[event].getName());
+            System.out.print(".");
             for(int i = 0; i < 13; i++){
                 if (errors[event][i] != null)
-                    System.out.print(errors[event][i]);   
+                    System.out.print(errors[event][i]); //System.out.printf("%8s\n", number);  
             }
             System.out.println("");
         }
         
 
         System.out.println("");
-        System.out.println("                                ВСЕГО ОШИБОК: " + (errDUR + errTC + errPGMFormat + errLogoFormat + errGOSTIFormat + err100movFormat + errTextAmerikaON + errTextAmerikaOFF + errSP100movParnerMpg + errSPGostiParnerMpg));
+        System.out.println("                                ВСЕГО ОШИБОК: " + (errDUR + errTC + errPGMFormat + errLogoFormat + errGOSTIFormat + err100movFormat + errTextAmerikaON + errTextAmerikaOFF + errSP100movParnerMpg + errSPGostiParnerMpg + errDaliFormat + errAnonsDate + errAnonsTime + errAnonsProgram));
         
         System.out.println("");
         if(errDUR != 0) System.out.println("Ошибок в Duration: " + errDUR);
@@ -487,12 +506,17 @@ public class PlayList{
         if(errTextAmerikaOFF != 0) System.out.println("Ошибок в format  text for Americas got talent off: " + errTextAmerikaOFF);
         if(errSP100movParnerMpg != 0) System.out.println("Ошибок в SP-100movPartner.mpg: " + errSP100movParnerMpg);
         if(errSPGostiParnerMpg != 0) System.out.println("Ошибок в SP-GOSTI.mpg: " + errSPGostiParnerMpg);
+        if(errDaliFormat != 0) System.out.println("Ошибок в format  Dali... : " + errDaliFormat);
+        
+        if(errAnonsDate != 0) System.out.println("Ошибок в дате анонса: " + errAnonsDate);
+        if(errAnonsTime != 0) System.out.println("Ошибок во времени анонса: " + errAnonsTime);
+        if(errAnonsProgram != 0) System.out.println("Ошибок в программах анонса: " + errAnonsProgram);
 
         System.out.println("");
         System.out.println("Проверить вручную:");
         System.out.println("1. Знак круг");
         System.out.println("2. Знак треугольник");
-        System.out.println("3. Склеротики");
+        System.out.println("3. Склеротики (названия программ)");
     }
 }
 
