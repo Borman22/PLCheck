@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package playlist;
 
 public class TimeCode {
@@ -14,6 +9,10 @@ public class TimeCode {
     final int MAX_VALUE = 24*90000; //2_160_000 кадров
     final int MIN_VALUE = 0;
     
+    TimeCode(){
+        setTC(0);
+    } // Конструктор без параметров
+               
     /**
      * Конструктор получает ТС в виде String ТОЛЬКО в таком формате (11 символов с разделителями-двоеточиями):     23:59:59:24
      */
@@ -104,7 +103,7 @@ public class TimeCode {
     /**
      * Получаем ТС в виде одного числа int. Часы, минуты, секунды, кадры пересчитаны в количество кадров. HH*90_000 + MM*1500 + SS*25 + FF
      */
-    int getTCInt(){
+    int getTCInFrame(){
         return TCInFrame;
     }
     
@@ -162,6 +161,7 @@ public class TimeCode {
     /**
      * Метод получает ТС в кадрах и приводит его к виду (int) 23595924
      */     
+
     int TCInFrameToIntStr(int i){
         int hh, mm, ss, ff;
         hh = mm = ss = ff = 0;
@@ -184,7 +184,7 @@ public class TimeCode {
          ff = i - 100 * ss; // кадры  
         return 90_000 * hh + 1500 * mm + 25 * ss + ff;
     }
-
+    
     int TCStrToIntStr(String s){
         char [] array = s.toCharArray();
         char arrayTemp [] = new char[8];       
@@ -212,7 +212,7 @@ public class TimeCode {
          return Integer.parseInt(new String(arrayTemp));
     }
     
-    boolean checkTC(String tc_in, String tc_out, String tc_dur){
+    boolean checkTC(String tc_in, String tc_out, String tc_dur){   //можно удалять
         boolean trueFalseFlag;
         int in = TCIntStrToFrame(TCStrToIntStr(tc_in));
         int out = TCIntStrToFrame(TCStrToIntStr(tc_out));

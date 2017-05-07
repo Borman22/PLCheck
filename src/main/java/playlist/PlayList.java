@@ -6,6 +6,7 @@ import javax.swing.JOptionPane;
 
 public class PlayList{
     static String[][] m = new String[1000][15];  // [event, strOfEvent]
+    static Event [] evnt = new Event[1000];
     static String[][] errors = new String[1000][13];
     static Scanner scn;
     static boolean flagEquals;
@@ -22,8 +23,10 @@ public class PlayList{
     static int errLogoFormat = 0;
     static int errGOSTIFormat = 0;
     static int err100movFormat = 0;
-    static int errTextAmerika = 0;
+    static int errTextAmerikaON = 0;
+    static int errTextAmerikaOFF = 0;
     static int totalErrTC = 0;
+    static int totalErrDUR = 0;
     static int errSP100movParnerMpg = 0;
     static int errSPGostiParnerMpg = 0;
     static int number = 0;
@@ -34,26 +37,27 @@ public class PlayList{
         checkPlayListFileCobaltAsRun();
     // StringBuffer sb = new StringBuffer ();
     // sb.setLength(50);
-    }
-    
-    
-    
+   
+    //evnt[1] = new Event();
+    //evnt[1].setDate("<date>2015-06-24</date>");
+     }
     private static void openFile(){
             try{
                 scn = new Scanner(new File("d://Borman//1"));
             } catch(Exception e){JOptionPane.showMessageDialog(null, "Файл не найден");}
         } 
-    
+
     private static void readFile(){
         while(scn.hasNext()){
             try{
                 bufStrOfEvent = scn.nextLine();
                 if (bufStrOfEvent.equals("<event>")){
                     m[event][14] = Integer.toString(strOfEvent);
+                            //System.out.println(m[event][14]);
                     event++;
                     strOfEvent = 0;
                 } 
-            m[event][strOfEvent++] = bufStrOfEvent;
+                m[event][strOfEvent++] = bufStrOfEvent;
                 //System.out.println("[" + event + ", " + (strOfEvent-1) + "]" + m[event][strOfEvent-1]);
             } catch(Exception e){    //Скорее всего catch никогда не выполнится
                 return;
@@ -61,131 +65,234 @@ public class PlayList{
         }
         m[event][14] = Integer.toString(strOfEvent);
         totalEvents = ++event;
-    }
-             
-    static void checkPlayListFileCobaltAsRun(){ 
-        checkTCCobaltAsRun();
-        checkFormats();
-        statistic();
-    }
-    
-    static void checkTCCobaltAsRun(){  
-        TimeCode TC = new TimeCode("06:00:00:00");
-        String tempTime, tempDuration, tempTCin, tempTCout; 
-        for(event = 1; event < totalEvents; event++){
-            tempTime = (m[event][2].substring(8, 19)); //time
-            tempTCin = tempTime;
-            number++;
-            errors[event][0] = number + ". [Time = " + tempTime;
-            tempDuration = m[event][3].substring(12, 23); //duration 
-            if(m[event][14].equals("9") || m[event][14].equals("10")){
-                if(event == totalEvents-1)
-                 tempTCout = "06:00:00:00";
-                else tempTCout = m[event+1][2].substring(8, 19); //time
-            } else {
-                tempTCin = m[event][4].substring(9, 20); //tc_in
-                tempTCout = m[event][5].substring(10, 21); //tc_out 
-              }
-    //        System.out.println("time = " + tempTime + "     in = " + tempTCin + "    out = " + tempTCout + "    dur = " + tempDuration);
-    //        System.out.print("Time = " + tempTime + ",  ");
-            errors[event][1] = ",  IN = " + tempTCin;
-            errors[event][2] = ",  OUT = " + tempTCout;
-            errors[event][3] = ",  DUR = " + tempDuration + "]";
-            if(TC.checkTC(tempTCin, tempTCout, tempDuration) == false){
-                totalErrTC++;
-                errors[event][4] = " is false   "; 
-            }
-            else errors[event][4] = " is true   ";
-        }
-    }
-    
-    
-    static void checkFormats(){
-        for(event = 1; event < totalEvents; event++ ){
-            if(m[event][14].equals("9") || m[event][14].equals("10")){
+        
+        
 
-                name = 5;
-                format = 6;
-                tc_in = format;
-            } else {
-                tc_in = 4; 
-                name = 7;
-                format = 8;
+        
+        for(int i = 1; i < totalEvents; i++){
+            evnt[i] = new Event();
+            evnt[i].setDate(m[i][1]);
+            evnt[i].setTime(m[i][2]);
+            evnt[i].setDuration(m[i][3]);
+            
+            if(m[i][14].equals("9") || m[i][14].equals("10")){
+                evnt[i].eventType = 9;
+                evnt[i].setTc_in(0);
                 
+                String TCOutTemp;
+                
+                if(i < (totalEvents-1))
+                    TCOutTemp = evnt[i].strContents(m[i+1][2], "<time>", "</time>");
+                else 
+                    TCOutTemp = "06:00:00:00";
+
+                int tempTC_in = TCStrToFrame(evnt[i].strContents(m[i][2], "<time>", "</time>"));
+                int tempTC_out = TCStrToFrame(TCOutTemp);
+                        
+                if(tempTC_out < tempTC_in)
+                    tempTC_out += 2160000;
+                    evnt[i].setTc_out(TCInFrameToIntStr(tempTC_out - tempTC_in));
+
+                evnt[i].setAsset_id(m[i][4]);
+                evnt[i].setName(m[i][5]);
+                evnt[i].setFormats(evnt[i].strContents(m[i][6], "<format>", "</format>").split(", "));
+
+                evnt[i].setStatus(m[i][7]);
+                
+            } else {
+                evnt[i].eventType = 11;
+                evnt[i].setTc_in(m[i][4]);
+                evnt[i].setTc_out(m[i][5]);
+                evnt[i].setAsset_id(m[i][6]);
+                evnt[i].setName(m[i][7]);
+                evnt[i].setFormats(evnt[i].strContents(m[i][8], "<format>", "</format>").split(", "));
+                evnt[i].setStatus(m[i][9]);
+            }
+        }
+        
+    }
+
+    static int TCStrToFrame(String s){
+        char [] array = s.toCharArray();
+        char arrayTemp [] = new char[8];       
+
+        if(s.length() != 11){
+            System.out.println("Таймкод должен быть в формате HH:MM:SS:FF. TC = 00:00:00:00.");
+            return 0;
+        }
+        
+        if((array[2] & array[5] & array[8]) != ':'){
+            System.out.println("Таймкод должен быть в формате HH:MM:SS:FF. TC = 00:00:00:00.");
+            return 0;
+        }
+
+        for(int i = 0, j = 0; i<11; i++){
+            if(array[i] >= '0' & array[i] <= '9'){
+                arrayTemp[j++] = array[i];
+            } else if(i == 2 | i == 5 | i==8){
+              //  continue;
+            } else {
+                System.out.println("Таймкод должен быть в формате HH:MM:SS:FF. TC = 00:00:00:00.");
+                return 0;
+            } 
+        }
+        int i = Integer.parseInt(new String(arrayTemp));
+        
+        int hh, mm, ss, ff;
+         hh = i / 1_000_000;    // часы
+        i = i - 1_000_000 * hh;
+         mm = i / 10_000;  // минуты
+        i = i - 10_000 * mm;
+         ss = i / 100;    // секунды
+         ff = i - 100 * ss; // кадры  
+        return 90_000 * hh + 1500 * mm + 25 * ss + ff;
+    }
+    static int TCInFrameToIntStr(int i){
+        int hh, mm, ss, ff;
+        hh = mm = ss = ff = 0;
+        hh = i/90_000;
+        i = i - 90_000 * hh;
+        mm = i/1500;
+        i = i - 1500 * mm;
+        ss = i/25;
+        ff = i - 25 * ss;
+        return 1_000_000 * hh + 10_000 * mm + 100 * ss + ff;
+    }
+     
+    static void checkPlayListFileCobaltAsRun(){ 
+        checkTCCobaltAsRun(evnt);
+        checkFormats(evnt);
+        statistic(evnt);
+    }
+    
+    static void checkTCCobaltAsRun(Event[] events){  //доделать проверку TC_in - TC_out - TC_in
+        for(event = 1; event < totalEvents; event++){
+            if(events[event].getDuration() != (events[event].getTc_out() - events[event].getTc_in())){
+                totalErrDUR++;
+                errors[event][0] = "   DUR_ERROR!";
+            }
+               // errors[event][1] = "IN/OUT_SUBCLIP_ERROR";
+               //     System.out.println(Arrays.deepToString(events[event].getFormat()));
+               // System.out.println("");
+        }
+    }    
+
+    static void checkFormats(Event[] events){
+        int tempPGM;
+        int tempLogo;
+        int tempPartnerGostiFirst; //partner GOSTI в первом субклипе - ошибка.
+        int tempPartnerGostiNext;  // отсутствует partner GOSTI в последующих субклипах - ошибка.
+        int tempPartner100movFirst;
+        int tempPartner100movNext;
+        int tempAmericasGotTalentON;
+        int tempAmericasGotTalentOFF;
+        
+        for(event = 1; event < totalEvents; event++ ){
+            tempPGM = 0;
+            tempLogo = 0;
+            tempPartnerGostiFirst = 0;
+            tempPartnerGostiNext = 0;
+            tempPartner100movFirst = 0;
+            tempPartner100movNext = 0;
+            tempAmericasGotTalentON = 0;
+            tempAmericasGotTalentOFF = 0;
+            
+            String [] tempFormat = events[event].getFormat();
+                                                                            //System.out.println(Arrays.deepToString(tempFormat));
+            for(int i = 0; i < tempFormat.length; i++){
+                                                                            //System.out.println(tempFormat[i]);
+                if(tempFormat[i].equals("PGM"))
+                    tempPGM++;
+
+                if( tempFormat[i].equals("logo v2") || tempFormat[i].equals("logo Traur") )
+                    tempLogo++;
             }
             
-            if(m[event][format].contains("PGM")){
-                //errors[event][5] = "PGM: true   ";                 
-            } else {
-                errors[event][5] = "PGM: false   ";
+            if(tempPGM != 1){
                 errPGMFormat++;
+                errors[event][1] = "  PGM_ERROR!";
             }
-
-            if(m[event][format].contains("logo v2") || m[event][format].contains("logo Traur")){
-                //errors[event][6] = "Logo v2/logo Traur: true   ";                 
-            } else {
-                errors[event][6] = "Logo v2/logo Traur: false   ";
+            
+            if(tempLogo != 1){
                 errLogoFormat++;
-            } 
-        
+                errors[event][2] = "  Logo_ERROR!";
+            }
+            
+            
+                
             // partner GOSTI
-            if((m[event][name].contains("Jamies") || m[event][name].contains("Oliver")) & !m[event][name].contains(">A-")){
-                if(m[event][tc_in].contains("00:00:00:00")){
-                        if(!m[event+1][5].contains("SP-GOSTI")) {
+            if( (events[event].getName().contains("Jamies") || events[event].getName().contains("Oliver")) & !events[event].getName().contains("A-")){
+                //System.out.println("saasfsdadadDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+                if(events[event].getTc_in() == 0){
+                    if(!events[event+1].getName().equals("SP-GOSTI")){
                         errSPGostiParnerMpg++;
-                        errors[event+1][9] = "SP-GOSTI.mpg: false   ";
-                    }// else errors[event+1][9] = "SP-GOSTI.mpg: true   ";
-                    //      ( m[event][format].contains("partner GOSTI") ) ? {errors[event][7] = "GOSTI: false   "; errGOSTIFormat++;} : (errors[event][7] = "GOSTI: true   ";)
-                    if(m[event][format].contains("partner GOSTI")){
-                        errors[event][7] = "GOSTI: false   ";
-                            errGOSTIFormat++;
-                        }// else errors[event][7] = "GOSTI: true   ";
-                } else if(m[event][format].contains("partner GOSTI"))
-                    /*errors[event][7] = "GOSTI: true   "*/;
-                    else { errors[event][7] = "GOSTI: false   ";
+                        errors[event+1][3] = "   SP-GOSTI.mpg_ERROR!";   //Ошибка. Нет SP-GOSTI.mpg
+                    }
+                    for (String tempFormat1 : tempFormat)
+                        if (tempFormat1.contains("partner GOSTI")) 
+                            tempPartnerGostiFirst++;  // Ошибка. В первом субклипе не должно быть partner GOSTI
+                    if(tempPartnerGostiFirst > 0){
+                        errors[event][4] = "   format_GOSTI_ERROR";
                         errGOSTIFormat++;
                     }
-            } 
-            
-       //*  // partner 100mov
-            if((m[event][name].contains("Anatomiya") | m[event][name].contains("Amerika")) & !m[event][name].contains(">A-")){
-                if(m[event][tc_in].contains("00:00:00:00")){
-                    if(!m[event+1][5].contains("100movPartner")) {
+                } else {
+                    for (String tempFormat1 : tempFormat)
+                        if (tempFormat1.contains("partner GOSTI")) 
+                            tempPartnerGostiNext++;
+                    if(tempPartnerGostiNext != 1){
+                        errors[event][4] = "   format_GOSTII_ERROR";
+                        errGOSTIFormat++;
+                    }
+                }
+            }  // partner GOSTI if()
+             
+            // partner 100mov
+            // доделать, чтобы если 2 файла стоят рядом
+            if( (events[event].getName().contains("Anatomiya") || events[event].getName().contains("Amerika")) & !events[event].getName().contains("A-")){
+                if(events[event].getTc_in() == 0){
+                    if(!events[event+1].getName().equals("SP-100movPartner")){
                         errSP100movParnerMpg++;
-                        errors[event+1][9] = "SP-100movPartner.mpg: false   ";
-                    }// else errors[event+1][9] = "SP-100movPartner.mpg: true   ";
-        //      ( m[event][format].contains("partner GOSTI") ) ? {errors[event][7] = "GOSTI: false   "; errGOSTIFormat++;} : (errors[event][7] = "GOSTI: true   ";)
-                    if(m[event][format].contains("partner 100mov")){
-                        errors[event][7] = "100mov: false   ";
-                            err100movFormat++;
-                        }// else errors[event][7] = "100mov: true   ";
-                } else if(m[event][format].contains("partner 100mov"))
-                    /*errors[event][7] = "100mov: true   "*/;
-                    else { errors[event][7] = "100mov: false   ";
+                        errors[event+1][3] = "   SP-100movPartner.mpg_ERROR!";   //Ошибка. Нет SP-100movPartner.mpg
+                    }
+                    for (String tempFormat1 : tempFormat)
+                        if (tempFormat1.contains("partner 100mov")) 
+                            tempPartner100movFirst++;  // Ошибка. В первом субклипе не должно быть partner 100mov
+                    if(tempPartner100movFirst > 0){
+                        errors[event][4] = "   format_100mov_ERROR";
                         err100movFormat++;
                     }
-            } 
-            
-            // text for Americas got talent
-            if((m[event][name].contains("Amerika")) & !m[event][name].contains("A-")){
-                    if(m[event][format].contains("text for Americas"))
-                        /*errors[event][8] = "text for Americas: true   "*/;
-                    else { errors[event][8] = "text for Americas: false   ";
-                        errTextAmerika++;
+                } else {
+                    for (String tempFormat1 : tempFormat)
+                        if (tempFormat1.contains("partner 100mov")) 
+                            tempPartner100movNext++;
+                    if(tempPartner100movNext != 1){
+                        errors[event][4] = "   format_100mov_ERROR";   
+                        err100movFormat++;  
                     }
+                }
+            }// partner 100mov if()
+            
+ 
+                             
+            // text for Americas got talent
+            if((events[event].getName().contains("Amerika")) & !events[event].getName().contains("A-")){
+                for (String tempFormat1 : tempFormat)
+                    if (tempFormat1.equals("text for Americas got talent")) 
+                            tempAmericasGotTalentON++;
+                if(tempAmericasGotTalentON != 1){
+                    errors[event][5] = "   text for Americas_ERROR!";
+                    errTextAmerikaON++;
+                 }
             } 
             
             
-            
-            //*/
-            
-            
-            
-        }
-    }
-    
-    static void statistic(){
-        for(event = 0; event < totalEvents; event++){
+        } //for(event = 1; event < totalEvents; event++ )
+    }  // static void checkFormats(Event[] events)
+                
+     
+    static void statistic(Event[] events){
+        for(event = 1; event < totalEvents; event++){
+            System.out.print(event + "   " + events[event].toString());
             for(int i = 0; i < 13; i++){
                 if (errors[event][i] != null)
                     System.out.print(errors[event][i]);   
@@ -193,14 +300,23 @@ public class PlayList{
             System.out.println("");
         }
         System.out.println("");
-        System.out.println("Ошибок в таймкоде: " + totalErrTC);
+        System.out.println("Ошибок в Duration: " + totalErrDUR);
+        //System.out.println("Ошибок в таймкоде: " + totalErrTC);
         System.out.println("Ошибок в format  PGM: " + errPGMFormat);
         System.out.println("Ошибок в format  logo: " + errLogoFormat);
         System.out.println("Ошибок в format  partner GOSTI: " + errGOSTIFormat);
         System.out.println("Ошибок в format  partner 100mov: " + err100movFormat);
-        System.out.println("Ошибок в format  text for Americas got talent: " + errTextAmerika);
+        System.out.println("Ошибок в format  text for Americas got talent: " + errTextAmerikaON);
+        //System.out.println("Ошибок в format  text for Americas got talent off: " + errTextAmerikaOFF);
         System.out.println("Ошибок в SP-100movPartner.mpg: " + errSP100movParnerMpg);
         System.out.println("Ошибок в SP-GOSTI.mpg: " + errSPGostiParnerMpg);
+        
+        
+        System.out.println("Если 2 файла Америки, Анатомии или Оливера идут подряд, программа ожидает на обоих (partner GOSTI)/(partner 100mov) - поэтому будет на один из них ругаться");
+        System.out.println("Проверить вручную:");
+        System.out.println("1. На мультиках знак круг");
+        System.out.println("2. text for Americas got talent off");
+        System.out.println("3. ");
         
     }
     
