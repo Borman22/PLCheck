@@ -45,13 +45,13 @@ public class AllPrograms {
 	{"PR-Bytva", "Dali PR-Bytva"},
 	{"BeetParty", "Свеколки", "Dali MS-BeetParty"}
 	//{"PR-Kroliki", ""}
-        //{"Карамба", "Dali PR-Karamba"}  // Программу не нашел
+        //{"Карамба", "Dali PR-Karamba"}  // Программу не нашел	    
     };    
     
     //Мультики, на которые надо ставить знак круг
     public static String[] multsName = {"Numo", "Ernie", "Elmo", "Graysya", "Grover", "Redyska", "Редиска", "BeetParty", "Свеколки", "MS-Bernard", "MS-Fixies-Aeroplan", "MS-Juki", "Жуки", "MS-Monk", "Монк"};
     //Программы, на которые нет склеротиков (для того, чтобы программа не ругалась, что склеротики не установлены)
-    public static String[] withoutDali = {"ambicioznie", "KrasivoJit", "MS-Fixies", "Фиксики", "кролики", "Kroliki", "PR-Women", "Женщины не прощают", "На чужих ошибках", "PR-Chyzhyeoshybki", "HS-CSI", "PR-Istorii"};
+    public static String[] withoutDali = {"ambicioznie", "KrasivoJit", "MS-Fixies", "Фиксики", "кролики", "Kroliki", "PR-Women", "Женщины не прощают", "На чужих ошибках", "PR-Chyzhyeoshybki", "HS-CSI", "HS-NCIS", "PR-Istorii"};
     
     public static String[] dynamicScleroticBudni =          {/*"MS-Fixies everyday 0730",     "PR-Moment-skalpelya today 1900",   */"PR-Bytva today 2000"   }; 
     public static String[] dynamicScleroticVihodnoj =       {/*"MS-Fixies everyday 0730",     "PR-Moment-skalpelya today 1900",   */"PR-Bytva today 2100"   };

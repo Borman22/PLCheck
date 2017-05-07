@@ -230,10 +230,15 @@ public class PLCheck{
             
             if( (tempLogo + tempLogoBitva) != 1 ){
                 errLogoFormat++;
-                errors[event][2] = "   Logo_ERROR! " + tempLogo + tempLogoBitva;
+                errors[event][2] = "   Logo_ERROR! ";
             }
             
-            
+            if(events[event].getName().equals("T-Tonometr-01") && (tempLogoBitva != 1)){
+		errLogoFormat++;
+		if(errors[event][2] == null)
+		    errors[event][2] = "   Logo_ERROR! [Logo for Bitva]";
+		else errors[event][2] = errors[event][2] + " [Logo for Bitva]";
+	    }
 	    
 	    
 	    
@@ -426,7 +431,7 @@ public class PLCheck{
             }
 
             // Создаем массив всех программ programs[номер программы][номер субклипа]
-            if((events[event].getDuration() > 1500) && !(events[event].getName().contains("Slalom"))){   // файл > 1 мин
+            if((events[event].getDuration() > 1500) && !(events[event].getName().contains("Slalom") || events[event].getName().contains("SLALOM") || events[event].getName().contains("T-Tonometr-01"))){   // файл > 1 мин
                 if(events[event].getTc_in() == 0){    // начинается с 00:00?
                     programs[numberOfPrg][9] = numberOfSubclip + 1;  //записываем сколько субклипов в предыдущей программе
                     numberOfSubclip = 0;
