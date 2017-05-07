@@ -465,9 +465,18 @@ public class PLCheck{
                             }   
                            
                         } else {    //это первая найденная программа
-                            programs[numberOfPrg][0] = event;
-                            errTC++;
-                            errors[event][8] = "   IN/OUT/ClipName_ERROR";
+			    for(int tempEvent = event; tempEvent >= 0; tempEvent--){
+                                if((events[tempEvent].isSameTC_Out(events[event].getTc_in())) && events[tempEvent].isSameName(bufPrgName)){  //нашли
+                                    programs[numberOfPrg][0] = tempEvent;
+                                    find = true;
+                                    break;
+                                }
+                            }    
+                            if(!find){
+                                programs[numberOfPrg][0] = event;
+                                errTC++;
+                                errors[event][8] = "   IN/OUT/ClipName_ERROR";
+                            }     
                         }
                     } //имя не совпадает
                 }   //файл начинается не с 00:00
