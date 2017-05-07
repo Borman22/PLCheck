@@ -5,14 +5,8 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 
@@ -51,7 +45,7 @@ public class PLCheck{
     static int number = 0;
     static int errDaliFormat = 0;
     static int errZnakKrugFormat = 0;
-    static int errZnakTriugolnikFormat = 0;
+    static int errZnakKrug16Format = 0;
     static String canonicalName;
     
     
@@ -118,7 +112,7 @@ public class PLCheck{
 
                 evnt[i].setAsset_id(m[i][4]);
                 evnt[i].setName(m[i][5]);
-                evnt[i].setFormats(evnt[i].strContents(m[i][6], "<format>", "</format>").split(", "));
+                evnt[i].setFormats(evnt[i].strContents(m[i][6], "<format>", "</format>").trim().split(", "));
 
                 evnt[i].setStatus(m[i][7]);
                 
@@ -127,7 +121,7 @@ public class PLCheck{
                 evnt[i].setTc_out(m[i][5]);
                 evnt[i].setAsset_id(m[i][6]);
                 evnt[i].setName(m[i][7]);
-                evnt[i].setFormats(evnt[i].strContents(m[i][8], "<format>", "</format>").split(", "));
+                evnt[i].setFormats(evnt[i].strContents(m[i][8], "<format>", "</format>").trim().split(", "));
                 evnt[i].setStatus(m[i][9]);
             }
         }
@@ -249,63 +243,63 @@ public class PLCheck{
 		}
 
 	    //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-            // Проверяем знак круг
-	    boolean thisIsMult = isThisMult(events[event].getName());
-            int znakKrug = 0;
-	    int znakKrugMT = 0; //manual time
-            for (String tempFormat1 : tempFormat){  //перебираем форматы в текущем субклипе - programs[program][subClip]
-                if (tempFormat1.equals("znak krug")) 
-                    znakKrug++;
-                if ( tempFormat1.equals("znak krug manual") )
-                    znakKrugMT++;
-            }
-	    if(thisIsMult){ // Это мультик
-		if(events[event].getDuration() > 4500){ // > 3 минут
-		    if( !((znakKrug == 1) && (znakKrugMT == 0)) ){
-			errZnakKrugFormat++;
-			errors[event][13] = "   format znak krug_ERROR!_(must be [znak krug] )";
-		    }
-		} else {   // < 3 минут
-		    if( !((znakKrug == 0) && (znakKrugMT == 1)) ){
-			errZnakKrugFormat++;
-			errors[event][13] = "   format znak krug_ERROR!_(must be [znak krug manual] )";
-		    }
-		}	
-		   
-            } else { // это не мультик
-		if((znakKrug + znakKrugMT) != 0){
-		    errZnakKrugFormat++;
-		    errors[event][13] = "   format znak krug_ERROR!";
-		}
-	    }
+//            // Проверяем знак круг
+//	    boolean thisIsMult = isThisMult(events[event].getName());
+//            int znakKrug = 0;
+//	    int znakKrugMT = 0; //manual time
+//            for (String tempFormat1 : tempFormat){  //перебираем форматы в текущем субклипе - programs[program][subClip]
+//                if (tempFormat1.equals("znak krug")) 
+//                    znakKrug++;
+//                if ( tempFormat1.equals("znak krug manual") )
+//                    znakKrugMT++;
+//            }
+//	    if(thisIsMult){ // Это мультик
+//		if(events[event].getDuration() > 4500){ // > 3 минут
+//		    if( !((znakKrug == 1) && (znakKrugMT == 0)) ){
+//			errZnakKrugFormat++;
+//			errors[event][13] = "   format znak krug_ERROR!_(must be [znak krug] )";
+//		    }
+//		} else {   // < 3 минут
+//		    if( !((znakKrug == 0) && (znakKrugMT == 1)) ){
+//			errZnakKrugFormat++;
+//			errors[event][13] = "   format znak krug_ERROR!_(must be [znak krug manual] )";
+//		    }
+//		}	
+//		   
+//            } else { // это не мультик
+//		if((znakKrug + znakKrugMT) != 0){
+//		    errZnakKrugFormat++;
+//		    errors[event][13] = "   format znak krug_ERROR!";
+//		}
+//	    }
+//	    
+//	    // Проверяем знак круг в MS-Fixies-Aeroplan
+//	    if(events[event].getName().contains("MS-Fixies-Aeroplan")){ // Это MS-Fixies-Aeroplan - значит должен быть трехминутный знак круг
+//		if( (znakKrug == 1) && (znakKrugMT == 0) ){
+//		    if(errors[event][13] != null){
+//			errors[event][13] = null;
+//			errZnakKrugFormat--;
+//		    }
+//		} else {
+//		    errZnakKrugFormat++;
+//		    errors[event][13] = "   format znak krug_ERROR!_(must be [znak krug] )";
+//		}
+//            } 
 	    
-	    // Проверяем знак круг в MS-Fixies-Aeroplan
-	    if(events[event].getName().contains("MS-Fixies-Aeroplan")){ // Это MS-Fixies-Aeroplan - значит должен быть трехминутный знак круг
-		if( (znakKrug == 1) && (znakKrugMT == 0) ){
-		    if(errors[event][13] != null){
-			errors[event][13] = null;
-			errZnakKrugFormat--;
-		    }
-		} else {
-		    errZnakKrugFormat++;
-		    errors[event][13] = "   format znak krug_ERROR!_(must be [znak krug] )";
-		}
-            } 
-	    
-	    // Проверяем znak triugolnik на сериалах (HS-...)
-	    int znakTriugolnik = 0;
+	    // Проверяем znak krug 16 на сериалах (HS-...)
+	    int znakKrug16 =  0;
 	    for (String tempFormat1 : tempFormat)  //перебираем форматы в текущем субклипе - programs[program][subClip]
-		if (tempFormat1.equals("znak triugolnik")) 
-		    znakTriugolnik++;
+		if (tempFormat1.equals("znak krug 16")) 
+		    znakKrug16++;
 	    if(events[event].getName().contains("HS-")){  // Это сериал
-		if(znakTriugolnik != 1){
-			errZnakTriugolnikFormat++;
-			errors[event][14] = "   format znak triugolnik_ERROR!";
+		if(znakKrug16 != 1){
+			errZnakKrug16Format++;
+			errors[event][14] = "   format znak krug 16_ERROR!";
 		} 
 	    } else { // это не сереал
-		if(znakTriugolnik != 0){
-		    errZnakTriugolnikFormat++;
-		    errors[event][14] = "   format znak triugolnik_ERROR!";
+		if(znakKrug16 != 0){
+		    errZnakKrug16Format++;
+		    errors[event][14] = "   format znak krug 16_ERROR!";
 		}
 	    }
                        
@@ -557,13 +551,12 @@ public class PLCheck{
 		    for(String str:events[event].getFormat()){
 			if(str.startsWith("Dali")){
 			    tonometrsDaliFormat = str;
-			System.out.println(tonometrsDaliFormat + " Тонометр");}
+			}
 		    }
 		    for(int j = 0; j < totalPrograms; j++){
 			if(programs[j][0] > event){
 			    programmsDaliFormat = getDali(events[programs[j][0]].getName());
 			    // Сравниваем формат с Dali и если он совпадает - выходим, а если нет - пишем ошибку
-			    System.out.println(programmsDaliFormat + " программа");
 			    if(!programmsDaliFormat.equals(tonometrsDaliFormat)){
 				errors[events[event].getNumberOfEvent()][7] = "   format_Dali_ERROR!"; // (ожидается format Dali)
 				errDaliFormat++;
@@ -648,7 +641,7 @@ public class PLCheck{
                 tempFormat = events[programs[program][subClip]].getFormat();
                 tempDali = 0;
                 for (String tempFormat1 : tempFormat){  //перебираем форматы в текущем субклипе - programs[program][subClip]
-                    if ( tempFormat1.startsWith("Dali") )
+		    if ( tempFormat1.startsWith("Dali") )
                         tempDali++;
                 }
                    // System.out.println("[" + program + "][" + subClip + "]  Dali = " + tempDali + " " + tempFormat1 + "              subClip = " + subClip + "  (programs[program][9] - 1) =" + (programs[program][9] - 1) );
@@ -743,7 +736,7 @@ public class PLCheck{
         
 
         System.out.println("");
-        System.out.println("                                ВСЕГО ОШИБОК: " + (errDUR + errTC + errPGMFormat + errLogoFormat + errGOSTIFormat + err100movFormat + errTextAmerikaON + errTextAmerikaOFF + errSP100movParnerMpg + errSPGostiParnerMpg + errDaliFormat + errAnonsDate + errAnonsTime + errAnonsProgram + errFormat + errZnakKrugFormat + errZnakTriugolnikFormat));
+        System.out.println("                                ВСЕГО ОШИБОК: " + (errDUR + errTC + errPGMFormat + errLogoFormat + errGOSTIFormat + err100movFormat + errTextAmerikaON + errTextAmerikaOFF + errSP100movParnerMpg + errSPGostiParnerMpg + errDaliFormat + errAnonsDate + errAnonsTime + errAnonsProgram + errFormat + errZnakKrugFormat + errZnakKrug16Format));
         
         System.out.println("");
         if(errDUR != 0) System.out.println("Ошибок в Duration: " + errDUR);
@@ -759,7 +752,7 @@ public class PLCheck{
         if(errDaliFormat != 0) System.out.println("Ошибок в format  Dali... : " + errDaliFormat);
 	if(errFormat != 0) System.out.println("Ошибок в format: " + errFormat);
 	if(errZnakKrugFormat != 0) System.out.println("Ошибок в format znak krug: " + errZnakKrugFormat);
-	if(errZnakTriugolnikFormat != 0) System.out.println("Ошибок в format znak triugolnik: " + errZnakTriugolnikFormat);
+	if(errZnakKrug16Format != 0) System.out.println("Ошибок в format znak krug 16: " + errZnakKrug16Format);
 	
 	 
         
@@ -769,7 +762,7 @@ public class PLCheck{
 
         System.out.println("");
         System.out.println("Проверить вручную:");
-        System.out.println("1. Знак квадрат");
+        System.out.println("1. Знак круг 18");
     }
     
     private static String getDali(String programName) {

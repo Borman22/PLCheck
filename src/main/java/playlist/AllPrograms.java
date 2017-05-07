@@ -43,7 +43,8 @@ public class AllPrograms {
 	{"MS-Monk", "Монк", "Dali MS-Monk"},
 	{"PR-Moment-skalpelya", "Dali PR-Moment-skalpelya"},
 	{"PR-Bytva", "Dali PR-Bytva"},
-	{"BeetParty", "Свеколки", "Dali MS-BeetParty"}
+	{"BeetParty", "Свеколки", "Dali MS-BeetParty"},
+	{"PR-Zhit-zdorovo", "Жить здорово", "Dali PR-Zhit zdorovo"}
 	//{"PR-Kroliki", ""}
         //{"Карамба", "Dali PR-Karamba"}  // Программу не нашел	    
     };    
