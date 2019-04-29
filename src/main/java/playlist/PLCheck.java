@@ -46,6 +46,7 @@ public class PLCheck {
     static int errDaliFormat = 0;
     static int errZnakKrugFormat = 0;
     static int errZnakKrug16Format = 0;
+    static int errZnakKrug12Format = 0;
     static String canonicalName;
 
 
@@ -264,12 +265,16 @@ public class PLCheck {
 //		}
 //            } 
 
-            // Проверяем znak krug 16 на сериалах (HS-...)
+            // Проверяем znak krug 16 на сериалах (HS-...) и znak krug 12 на HS-CHAU
             int znakKrug16 = 0;
-            for (String tempFormat1 : tempFormat)  //перебираем форматы в текущем субклипе - programs[program][subClip]
+            int znakKrug12 = 0;
+            for (String tempFormat1 : tempFormat) {  //перебираем форматы в текущем субклипе - programs[program][subClip]
                 if (tempFormat1.equals("znak krug 16"))
                     znakKrug16++;
-            if (events[event].getName().contains("HS-") || events[event].getName().contains("Секс и город") || events[event].getName().contains("Морская полиция")) {  // Это сериал
+                if (tempFormat1.equals("znak krug 12"))
+                    znakKrug12++;
+            }
+            if ((events[event].getName().contains("HS-") || events[event].getName().contains("Секс и город") || events[event].getName().contains("Морская полиция")) && !events[event].getName().contains("HS-CHAU")) {  // Это сериал
                 if (znakKrug16 != 1) {
                     errZnakKrug16Format++;
                     errors[event][14] = "   format znak krug 16_ERROR!";
@@ -281,6 +286,17 @@ public class PLCheck {
                 }
             }
 
+            if (events[event].getName().contains("HS-CHAU")) {  // Это сериал HS-CHAU
+                if (znakKrug12 != 1) {
+                    errZnakKrug12Format++;
+                    errors[event][14] = (errors[event][14] == null) ? "   format znak krug 12_ERROR!" : errors[event][14] + "   format znak krug 12_ERROR!";
+                }
+            } else { // это не HS-CHAU
+                if (znakKrug12 != 0) {
+                    errZnakKrug12Format++;
+                    errors[event][14] = (errors[event][14] == null) ? "   format znak krug 12_ERROR!" : errors[event][14] + "   format znak krug 12_ERROR!";
+                }
+            }
 
             // partner GOSTI
             if ((events[event].getName().contains("Jamies") || events[event].getName().contains("Oliver")) & !events[event].getName().contains("A-")) {
@@ -705,7 +721,7 @@ public class PLCheck {
 
 
         System.out.println("");
-        System.out.println("                                ВСЕГО ОШИБОК: " + (errDUR + errTC + errPGMFormat + errLogoFormat + errGOSTIFormat + err100movFormat + errTextAmerikaON + errTextAmerikaOFF + errSP100movParnerMpg + errSPGostiParnerMpg + errDaliFormat + errAnonsDate + errAnonsTime + errAnonsProgram + errFormat + errZnakKrugFormat + errZnakKrug16Format));
+        System.out.println("                                ВСЕГО ОШИБОК: " + (errDUR + errTC + errPGMFormat + errLogoFormat + errGOSTIFormat + err100movFormat + errTextAmerikaON + errTextAmerikaOFF + errSP100movParnerMpg + errSPGostiParnerMpg + errDaliFormat + errAnonsDate + errAnonsTime + errAnonsProgram + errFormat + errZnakKrugFormat + errZnakKrug16Format + errZnakKrug12Format));
 
         System.out.println("");
         if (errDUR != 0) System.out.println("Ошибок в Duration: " + errDUR);
@@ -724,16 +740,12 @@ public class PLCheck {
         if (errFormat != 0) System.out.println("Ошибок в format: " + errFormat);
         if (errZnakKrugFormat != 0) System.out.println("Ошибок в format znak krug: " + errZnakKrugFormat);
         if (errZnakKrug16Format != 0) System.out.println("Ошибок в format znak krug 16: " + errZnakKrug16Format);
+        if (errZnakKrug12Format != 0) System.out.println("Ошибок в format znak krug 12: " + errZnakKrug12Format);
 
 
         if (errAnonsDate != 0) System.out.println("Ошибок в дате анонса: " + errAnonsDate);
         if (errAnonsTime != 0) System.out.println("Ошибок во времени анонса: " + errAnonsTime);
         if (errAnonsProgram != 0) System.out.println("Ошибок в программах анонса: " + errAnonsProgram);
-
-        System.out.println("");
-        System.out.println("Проверить вручную:");
-        System.out.println("1. Знак круг 18");
-        // sendByNet();
     }
 
     private static String getDali(String programName) {
