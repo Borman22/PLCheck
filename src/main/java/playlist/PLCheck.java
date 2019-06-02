@@ -299,7 +299,7 @@ public class PLCheck {
             }
 
             // partner GOSTI
-            if ((events[event].getName().contains("Jamies") || events[event].getName().contains("Oliver")) & !events[event].getName().contains("A-")) {
+    /*        if ((events[event].getName().contains("Jamies") || events[event].getName().contains("Oliver")) & !events[event].getName().contains("A-")) {
 //                if(! (events[event].getName().contains("Christmas") || events[event].getName().contains("Great") || events[event].getName().contains("Trip") || events[event].getName().contains("Big")) ){
                 if (events[event].getTc_in() == 0) {  // первый клип
                     if (!events[event + 1].getName().equals("SP-GOSTI")) {
@@ -358,10 +358,10 @@ public class PLCheck {
 //                    }
 //                }
 
-            } // partner GOSTI !(Jamies 15" || "Oliver")
+    }*/         // partner GOSTI !(Jamies 15" || "Oliver")
 
             // partner 100mov
-            if ((events[event].getName().contains("Anatomiya") || events[event].getName().contains("Amerika") || events[event].getName().contains("Америка имеет талант")) & !events[event].getName().contains("A-")) {
+    /*        if ((events[event].getName().contains("Anatomiya") || events[event].getName().contains("Amerika") || events[event].getName().contains("Америка имеет талант")) & !events[event].getName().contains("A-")) {
                 if (events[event].getTc_in() == 0) {
                     if (!events[event + 1].getName().equals("SP-100movPartner")) {
                         errSP100movParnerMpg++;
@@ -410,10 +410,10 @@ public class PLCheck {
                 } // </не первый клип>
 
             }  // partner 100mov if()                        
-
+    */
 
             //Anons errors
-            if ((events[event].getDuration() < 500) && (events[event].getName().startsWith("A-"))) { // это анонс
+            if ((events[event].getDuration() < 500) && (events[event].getName().startsWith("A-%d%d-%d%d"))) { // это анонс
                 buf = new StringBuffer();
                 tempAnons = events[event].getName().split("-");
                 tempTC.setTC((buf.append(tempAnons[1]).append(':').append(tempAnons[2]).append(":00:00").toString()));
@@ -590,7 +590,7 @@ public class PLCheck {
 
 
                 //text for Americas got talent off
-                if (events[programs[program][0]].getName().contains("Amerika") || events[programs[program][0]].getName().contains("Америка имеет талант")) {
+    /*            if (events[programs[program][0]].getName().contains("Amerika") || events[programs[program][0]].getName().contains("Америка имеет талант")) {
                     for (subClip = 0; subClip < programs[program][9]; subClip++) {  //перебераем все субклипы в этой программе
                         tempFormat = events[programs[program][subClip]].getFormat();
                         tempAmericasGotTalentON = 0;
@@ -622,6 +622,7 @@ public class PLCheck {
                     } //for...  - перебераем все субклипы в этой программе
 
                 } //if Amerika
+    */
 
                 //Проверим все форматы Dali на наличие/отсутствие. Кроме HS-Krasivie-i-ambicioznie и KrasivoJit и еще несколько
                 for (subClip = 0; subClip < programs[program][9]; subClip++) { //перебераем все субклипы в этой программе
