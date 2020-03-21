@@ -152,12 +152,12 @@ public class PLCheck {
     static void checkFormats(Event[] events) {
         int tempPGM;
         int tempLogo;
-        int tempPartnerGostiFirst; //partner GOSTI в первом субклипе - ошибка.
-        int tempPartnerGostiNext;  // отсутствует partner GOSTI в последующих субклипах - ошибка.
-        int tempPartner100movFirst;
-        int tempPartner100movNext;
-        int tempAmericasGotTalentON;
-        int tempAmericasGotTalentOFF;
+//        int tempPartnerGostiFirst; //partner GOSTI в первом субклипе - ошибка.
+//        int tempPartnerGostiNext;  // отсутствует partner GOSTI в последующих субклипах - ошибка.
+//        int tempPartner100movFirst;
+//        int tempPartner100movNext;
+//        int tempAmericasGotTalentON;
+//        int tempAmericasGotTalentOFF;
         int tempDali;
         boolean thisIsNextSubclip;
         String bufPrgName = "qqq";
@@ -184,11 +184,11 @@ public class PLCheck {
             tempPGM = 0;
             tempLogo = 0;
 
-            tempPartnerGostiFirst = 0;
-            tempPartnerGostiNext = 0;
-            tempPartner100movFirst = 0;
-            tempPartner100movNext = 0;
-            thisIsNextSubclip = false;
+//            tempPartnerGostiFirst = 0;
+//            tempPartnerGostiNext = 0;
+//            tempPartner100movFirst = 0;
+//            tempPartner100movNext = 0;
+//            thisIsNextSubclip = false;
 
 
             tempFormat = events[event].getFormat();
@@ -274,7 +274,7 @@ public class PLCheck {
                 if (tempFormat1.equals("znak krug 12"))
                     znakKrug12++;
             }
-            if ((events[event].getName().contains("HS-") || events[event].getName().contains("Секс и город") || events[event].getName().contains("Морская полиция")) && !events[event].getName().contains("HS-CHAU")) {  // Это сериал
+            if ((events[event].getName().contains("HS-") || events[event].getName().contains("Секс и город") || events[event].getName().contains("Морская полиция")) && !events[event].getName().contains("Чисто английские") && !events[event].getName().contains("HS-CHAU")) {  // Это сериал
                 if (znakKrug16 != 1) {
                     errZnakKrug16Format++;
                     errors[event][14] = "   format znak krug 16_ERROR!";
@@ -286,7 +286,7 @@ public class PLCheck {
                 }
             }
 
-            if (events[event].getName().contains("HS-CHAU")) {  // Это сериал HS-CHAU
+            if (events[event].getName().contains("HS-CHAU") || events[event].getName().contains("Чисто английские")) {  // Это сериал HS-CHAU
                 if (znakKrug12 != 1) {
                     errZnakKrug12Format++;
                     errors[event][14] = (errors[event][14] == null) ? "   format znak krug 12_ERROR!" : errors[event][14] + "   format znak krug 12_ERROR!";
@@ -413,7 +413,7 @@ public class PLCheck {
     */
 
             //Anons errors
-            if ((events[event].getDuration() < 500) && (events[event].getName().startsWith("A-%d%d-%d%d"))) { // это анонс
+            if ((events[event].getDuration() < 500) && (events[event].getName().startsWith("A-%d%d-%d%d-%d%d-%d%d"))) { // это анонс с временем и датой
                 buf = new StringBuffer();
                 tempAnons = events[event].getName().split("-");
                 tempTC.setTC((buf.append(tempAnons[1]).append(':').append(tempAnons[2]).append(":00:00").toString()));
@@ -440,7 +440,7 @@ public class PLCheck {
             }
 
             // Создаем массив всех программ programs[номер программы][номер субклипа]
-            if ((events[event].getDuration() > 1500) && !(events[event].getName().contains("Slalom") || events[event].getName().contains("SLALOM") || events[event].getName().startsWith("T-"))) {   // файл > 1 мин и это не телемагазин
+            if ((events[event].getDuration() > 1500) && !(events[event].getName().contains("Slalom") || events[event].getName().contains("SLALOM") || events[event].getName().startsWith("T-") || events[event].getName().startsWith("N-NEWS"))) {   // файл > 1 мин и это не телемагазин
                 if (events[event].getTc_in() == 0) {    // начинается с 00:00?
                     programs[numberOfPrg][9] = numberOfSubclip + 1;  //записываем сколько субклипов в предыдущей программе
                     numberOfSubclip = 0;
